@@ -1,0 +1,96 @@
+/* Main Navigation Container */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Left Section: Logo & Nav Links */
+.navbar-content-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* Logo */
+.logo {
+  font-size: 18px;
+  font-weight: 800;
+  color: #2563eb;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+}
+
+/* Navigation Links List */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  transition: color 0.2s ease;
+}
+
+.navbar-links a:hover {
+  color: #2563eb;
+}
+
+/* Right Section: Mode Tamu & Buttons */
+.navbar-content-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Mode Tamu Badge */
+.navbar-content-right > span {
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* "Masuk" Button (First div with type="button") */
+.navbar-content-right > div[type="button"]:nth-of-type(1) {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-content-right > div[type="button"]:nth-of-type(1):hover {
+  background-color: #f1f5f9;
+}
+
+/* "Daftar" Button (Second div with type="button") */
+.navbar-content-right > div[type="button"]:nth-of-type(2) {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-content-right > div[type="button"]:nth-of-type(2):hover {
+  background-color: #1d4ed8;
+}

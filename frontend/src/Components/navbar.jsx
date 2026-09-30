@@ -1,13 +1,12 @@
 export function Navbar() {
     return (
         <nav className="navbar">
-            <div className="logo">PTKOM</div>
-
-            <div className="navbar-content">
-                <ul>
-                    <li><a href="#Beranda">Beranda</a></li>
-                    <li><a href="#Produk">Produk & Ulasan</a></li>
-                </ul>
+            <div className="navbar-content-left">
+                <div className="logo">PTKOM</div>
+                    <div className="navbar-links">
+                        <a href="#Beranda">Beranda</a>
+                        <a href="#Produk">Produk & Ulasan</a>
+                    </div>
             </div>
 
             <div className="navbar-content-right">
