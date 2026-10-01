@@ -1,4 +1,3 @@
-/* Main Navigation Container */
 .navbar {
   display: flex;
   align-items: center;
@@ -9,14 +8,12 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Left Section: Logo & Nav Links */
 .navbar-content-left {
   display: flex;
   align-items: center;
   gap: 32px;
 }
 
-/* Logo */
 .logo {
   font-size: 18px;
   font-weight: 800;
@@ -25,7 +22,6 @@
   letter-spacing: -0.5px;
 }
 
-/* Navigation Links List */
 .navbar-links {
   display: flex;
   align-items: center;
@@ -47,14 +43,12 @@
   color: #2563eb;
 }
 
-/* Right Section: Mode Tamu & Buttons */
 .navbar-content-right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-/* Mode Tamu Badge */
 .navbar-content-right > span {
   background-color: #dbeafe;
   color: #1e40af;
@@ -64,7 +58,6 @@
   border-radius: 20px;
 }
 
-/* "Masuk" Button (First div with type="button") */
 .navbar-content-right > div[type="button"]:nth-of-type(1) {
   color: #334155;
   font-size: 14px;
@@ -79,7 +72,6 @@
   background-color: #f1f5f9;
 }
 
-/* "Daftar" Button (Second div with type="button") */
 .navbar-content-right > div[type="button"]:nth-of-type(2) {
   background-color: #2563eb;
   color: #ffffff;
