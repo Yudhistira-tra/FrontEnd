@@ -2,13 +2,16 @@ import './App.css';
 import react, { useState } from 'react';
 import mockupImage from './assets/Eliteng.png';
 import mockupImage2 from './assets/Dumbbg.png';
+
 import './Components/navbar.css';
 import './Components/HeroSection.css';
 import './Components/productCard.css';
+
 import { Navbar } from './Components/navbar.jsx';
 import { HeroSection } from './Components/HeroSection.jsx'; 
 import { ProductCard } from './Components/productCard.jsx';
 import { Pagination } from './Components/Pagination.jsx';
+import { Authentication } from './pages/Authentication.jsx';
 
 const mockProducts = [
  { id: 1, title: 'Elite Eter', image: mockupImage, category: 'Sona', price: 500000, rating: 4.8 },
@@ -23,22 +26,22 @@ const mockProducts = [
 
 function App() {
 
-
+  const [activePage, setActivePage] = useState('home');
   const [currentPage, setCurrentPage] = useState(1);
+  
+
   const productsPerPage = 6;
-
   const totalPages = Math.ceil(mockProducts.length / productsPerPage) || 1;
-
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = mockProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   return (
     <div className="App">
-      <Navbar 
-      />
+      <Navbar onNavigate={(page) => setActivePage(page)}/>
+      {activePage === 'home' && (
+        <>
       <HeroSection />
-
       <main className="product-grid"> {currentProducts.map((product) => (
         <ProductCard
           key={product.id}
@@ -56,6 +59,17 @@ function App() {
         totalPages={totalPages}
         onPageChange={(page) => setCurrentPage(page)}
       />
+      </>
+      )}
+
+      {(activePage === 'login' || activePage === 'register') && (
+        <main className="auth-container">
+          <Authentication
+          defaultMode = {activePage}
+          onBackToHome={() => setActivePage('home')}
+          />
+        </main>
+      )}
     </div>
   );
 }

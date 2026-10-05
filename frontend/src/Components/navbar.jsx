@@ -1,18 +1,21 @@
-export function Navbar() {
+import React from 'react';
+import './navbar.css';
+
+export function Navbar({onNavigate}) {
     return (
         <nav className="navbar">
             <div className="navbar-content-left">
-                <div className="logo">PTKOM</div>
+                <div className="logo" onClick={() => onNavigate('home')} style={{cursor: 'pointer'}}>PTKOM</div>
                     <div className="navbar-links">
-                        <a href="#Beranda">Beranda</a>
+                        <a href="#Beranda" onClick={() => onNavigate('home')}>Beranda</a>
                         <a href="#Produk">Produk & Ulasan</a>
                     </div>
             </div>
 
             <div className="navbar-content-right">
                 <span>Mode Tamu</span>
-                <div type="button">Masuk</div>
-                <div type="button">Daftar</div>
+                <div type="button" onClick={() => onNavigate('login')}>Masuk</div>
+                <div type="button" onClick={() => onNavigate('register')}>Daftar</div>
             </div>
         </nav>
     );
