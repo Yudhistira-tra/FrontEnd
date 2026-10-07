@@ -8,6 +8,7 @@ import { Authentication } from './pages/Authentication.jsx';
 import { ProductDetail } from './pages/ProductDetail.jsx';
 import { initialProducts } from './data/mockData.js';
 import { KelolaProduk } from './Components/Admin/kelolaProduk.jsx'
+import { AdminLayout } from './Components/Admin/AdminLayout.jsx';
 
 function App() {
   const [activePage, setActivePage] = useState('home');
@@ -81,7 +82,9 @@ function App() {
       )}
 
       {activePage === 'admin' && (
-        <KelolaProduk />
+        <AdminLayout activeMenu="produk">
+          <KelolaProduk />
+        </AdminLayout>
       )}
 
       {(activePage === 'login' || activePage === 'register') && (
