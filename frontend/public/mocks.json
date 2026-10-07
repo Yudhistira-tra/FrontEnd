@@ -1,0 +1,57 @@
+{
+  "id": "thinkpad-x1-gen11",
+  "title": "ThinkPad X1 Carbon Gen 11 (2024)",
+  "category": "Laptop Bisnis & Produktivitas",
+  "releaseTag": "Rilis Resmi 2024",
+  "rating": 4.8,
+  "maxRating": 5.0,
+  "reviewCount": 42,
+  "startingPrice": 28500000,
+  "description": "Generasi ke-11 dari lini legendaris ini tetap menjadi standar emas ultrabook bisnis dengan bobot hanya 1.12 kg dan ergonomi keyboard terbaik di kelasnya. Performa termal stabil dengan baterai yang sanggup bertahan seharian penuh untuk alur kerja eksekutif maupun pengembang perangkat lunak.",
+  "images": [
+    "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop&q=80"
+  ],
+  "specs": [
+    { "label": "Prosesor", "value": "Intel Core i7-1365U (10 Cores, 12 Threads, up to 5.20 GHz)", "icon": "⚙️" },
+    { "label": "Memori RAM", "value": "32 GB LPDDR5 6400MHz (Soldered)", "icon": "💾" },
+    { "label": "Penyimpanan", "value": "1 TB SSD M.2 PCIe Gen 4 NVMe Opal 2.0", "icon": "💽" },
+    { "label": "Layar", "value": "14\" WUXGA (1920 x 1200) IPS, 16:10, Anti-Glare, 400 nits, 100% sRGB", "icon": "🖥️" },
+    { "label": "Bobot", "value": "1.12 kg (Sasis Carbon Fiber & Magnesium)", "icon": "⚖️" },
+    { "label": "Baterai & Daya", "value": "57Wh Li-Polymer, Rapid Charge 65W USB-C (80% dalam 60 menit)", "icon": "🔋" }
+  ],
+  "editorReview": {
+    "summary": "Uji daya tahan baterai riil mencapai 10 jam 14 menit pada kecerahan 150 nits.",
+    "portabilityScore": "9.6 / 10",
+    "keyboardScore": "9.8 / 10"
+  },
+  "comments": [
+    {
+      "id": 1,
+      "author": "Reza Pratama",
+      "initials": "RP",
+      "timeAgo": "2 hari yang lalu",
+      "rating": 5,
+      "text": "Keyboard ThinkPad tetap yang terbaik untuk mengetik seharian. Daya tahan baterai dapat 9 jam lebih untuk browsing dan coding ringan.",
+      "likes": 12
+    },
+    {
+      "id": 2,
+      "author": "Dimas Nugroho",
+      "initials": "DN",
+      "timeAgo": "4 hari yang lalu",
+      "rating": null,
+      "text": "Apakah RAM-nya bisa di-upgrade sendiri di kemudian hari atau sudah tersolder?",
+      "likes": 3,
+      "reply": {
+        "author": "WartaTekno Staff",
+        "role": "Editorial Staff",
+        "timeAgo": "3 hari yang lalu",
+        "text": "Halo Dimas, RAM pada ThinkPad X1 Carbon Gen 11 tersolder permanen (soldered). Jadi pastikan memilih kapasitas yang cukup sejak awal pembelian.",
+        "helpful": 6
+      }
+    }
+  ]
+}

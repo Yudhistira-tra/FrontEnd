@@ -1,0 +1,113 @@
+.kelola-produk-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    padding: 40px 40px;
+    background-color: #F8F9FF;
+}
+
+.top-part {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 100px;
+    margin-bottom: 24px;
+}
+
+.cards {
+    display: flex;
+    gap: 70px;
+}
+
+.card-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.card-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-container .title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.card-container .contents {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.card-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.card-left h2 {
+  font-size: 30px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1;
+}
+
+.card-left span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.card-right img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.contents {
+    display: flex;
+    align-items: center;
+    gap: 200px;
+}
+.card-left {
+    display: flex;
+}
+
+.add-btn {
+display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.add-btn:active {
+  transform: scale(0.98);
+}
+

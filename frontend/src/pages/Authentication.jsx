@@ -4,38 +4,29 @@ import googleIcon from '../assets/google.svg';
 
 export function Authentication({ defaultMode = 'login', onBackToHome }) {
   const [mode, setMode] = useState(defaultMode);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   useEffect(() => {
     setMode(defaultMode);
   }, [defaultMode]);
 
-  const [formData, setFormData] = useState({
-    fullName: '', // Fixed: camelCase to match name="fullName"
-    email: '',
-    password: '',
-    confirmPassword: '',
-    rememberMe: false,
-    agreeTerms: false,
-  });
-
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (mode === 'login') {
-      console.log('Logging in:', { email: formData.email, password: formData.password });
-    } else {
-      if (formData.password !== formData.confirmPassword) {
-        return alert('Konfirmasi kata sandi tidak cocok!');
-      }
-      console.log('Registering:', formData);
+    if (mode === 'register' && formData.password !== formData.confirmPassword) {
+      return alert('Konfirmasi kata sandi tidak cocok!');
     }
+    alert(`${mode === 'login' ? 'Berhasil Masuk' : 'Pendaftaran Berhasil'}!`);
+    if (onBackToHome) onBackToHome();
   };
 
   const isRegister = mode === 'register';
@@ -66,8 +57,9 @@ export function Authentication({ defaultMode = 'login', onBackToHome }) {
       <form onSubmit={handleSubmit} className="auth-form">
         {isRegister && (
           <div className="form-group">
-            <label>Nama Lengkap</label>
+            <label htmlFor="fullName">Nama Lengkap</label>
             <input
+              id="fullName"
               type="text"
               name="fullName"
               placeholder="Nama lengkap Anda"
@@ -79,10 +71,10 @@ export function Authentication({ defaultMode = 'login', onBackToHome }) {
           </div>
         )}
 
-
         <div className="form-group">
-          <label>Alamat Email</label>
+          <label htmlFor="email">Alamat Email</label>
           <input
+            id="email"
             type="email"
             name="email"
             placeholder="nama@email.com"
@@ -94,8 +86,9 @@ export function Authentication({ defaultMode = 'login', onBackToHome }) {
         </div>
 
         <div className="form-group">
-          <label>Kata Sandi</label>
+          <label htmlFor="password">Kata Sandi</label>
           <input
+            id="password"
             type="password"
             name="password"
             placeholder="••••••••"
@@ -108,8 +101,9 @@ export function Authentication({ defaultMode = 'login', onBackToHome }) {
 
         {isRegister && (
           <div className="form-group">
-            <label>Konfirmasi Kata Sandi</label>
+            <label htmlFor="confirmPassword">Konfirmasi Kata Sandi</label>
             <input
+              id="confirmPassword"
               type="password"
               name="confirmPassword"
               placeholder="Ulangi kata sandi"
@@ -126,40 +120,12 @@ export function Authentication({ defaultMode = 'login', onBackToHome }) {
         </button>
       </form>
 
-        <p>
-
-        {!isRegister ? (
-            <>
-                Belum punya akun?{' '}
-                <button
-                    type="button"
-                    className="auth-switch-btn"
-                    onClick={() => setMode('register')}
-                >
-                    Daftar di sini
-            </button>
-            </>
-        ) : (
-            <>
-                Sudah punya akun?{' '}
-                <button
-                type="button"
-                className="auth-switch-btn"
-                onClick={() => setMode('login')}
-                >
-                    Masuk di sini
-                </button>
-            </>
-        )}
-        </p>
-
       <div className="divider">
-        <span>atau lanjutkan dengan</span>
+        <span>atau</span>
       </div>
-
       <button type="button" className="google-btn">
-        <img src={googleIcon} alt="Google" width="20" height="20" />
-        <span>{isRegister ? 'Daftar dengan Google' : 'Google'}</span>
+        <img src={googleIcon} alt="google"/>
+        Lanjutkan dengan Google
       </button>
     </div>
   );
