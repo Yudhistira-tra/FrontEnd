@@ -99,5 +99,84 @@ export const initialComments = [
     comment: "Kunjungi tautan judi online ini untuk slot gacor...",
     createdAt: "3 Jam lalu",
     status: "Spam"
+  },
+  {
+    id: "c3",
+    productId: "macbook-pro-14-m3",
+    userName: "Sari Wulandari",
+    userRole: "Member Terverifikasi",
+    rating: 4.5,
+    comment: "Layar XDR-nya memang tajam, tapi harga masih terasa tinggi untuk ukuran Indonesia.",
+    createdAt: "1 Jam lalu",
+    status: "Menunggu"
+  },
+  {
+    id: "c4",
+    productId: "samsung-s24-ultra",
+    userName: "Budi Santoso",
+    userRole: "Tamu Unverified",
+    rating: 5.0,
+    comment: "Kamera 200MP-nya benar-benar jernih saat night mode. Recommended!",
+    createdAt: "5 Menit lalu",
+    status: "Menunggu"
+  },
+  {
+    id: "c5",
+    productId: "sony-wh1000xm5",
+    userName: "Rina Kartika",
+    userRole: "Member Terverifikasi",
+    rating: 4.0,
+    comment: "ANC-nya luar biasa, tapi headband-nya agak sesak setelah pemakaian lebih dari 3 jam.",
+    createdAt: "1 Hari lalu",
+    status: "Menunggu"
+  }
+];
+
+export const feedbackCategories = [
+  "Permintaan Ulasan Produk Baru",
+  "Laporan Bug & Sistem",
+  "Saran Fitur & UI"
+];
+
+export const feedbackStatuses = [
+  "Belum Ditanggapi",
+  "Sedang Ditinjau Tim Teknis",
+  "Diimplementasikan",
+  "Selesai"
+];
+
+export const initialFeedbacks = [
+  {
+    id: "f1",
+    category: "Permintaan Ulasan Produk Baru",
+    userName: "Reza Pratama",
+    email: "reza.pratama@email.com",
+    timeAgo: "2 Jam yang lalu",
+    title: "Tolong tambahkan review lengkap Asus ROG Ally X 2024",
+    message: "Halo tim WartaTekno, mohon ulas handheld konsol Asus ROG Ally X terbaru terkait daya tahan baterai dan ergonomi grip saat bermain game AAA. Apakah worth it untuk upgrade dari ROG Ally Z1 Extreme generasi pertama? Terima kasih!",
+    tags: ["Kategori Perangkat: Gaming Handheld", "Target: Asus ROG Ally X"],
+    status: "Belum Ditanggapi"
+  },
+  {
+    id: "f2",
+    category: "Laporan Bug & Sistem",
+    userName: "Nabila Putri",
+    email: "nabila.p@email.com",
+    timeAgo: "Kemarin, 16:45",
+    title: "Filter kategori tablet tidak menampilkan hasil di browser Safari",
+    message: "Saat saya memilih opsi filter 'Tablet & Aksesori' di MacBook Safari 17.4, halaman terus memuat tanpa daftar produk. Mohon dicek tim teknis karena saat coba di Google Chrome berfungsi normal.",
+    tags: ["macOS Sonoma / Safari 17.4", "ID Tiket: #BUG-9482"],
+    status: "Sedang Ditinjau Tim Teknis"
+  },
+  {
+    id: "f3",
+    category: "Saran Fitur & UI",
+    userName: "Hendra Gunawan",
+    email: "hendra.g@gmail.com",
+    timeAgo: "3 Hari yang lalu",
+    title: "Fitur perbandingan spesifikasi 2 gadget side-by-side",
+    message: "Saran untuk menambahkan fitur komparasi dua laptop/HP secara berdampingan agar pembaca lebih mudah membandingkan prosesor dan layar tanpa harus membuka dua tab terpisah.",
+    tags: ["Rilis dalam pembaruan v2.4 (Modul Perbandingan Katalog)"],
+    status: "Diimplementasikan"
   }
 ];

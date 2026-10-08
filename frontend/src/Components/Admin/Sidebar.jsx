@@ -1,13 +1,11 @@
 import React from 'react';
 import './Sidebar.css';
 
-export function Sidebar({ activeMenu = 'produk' }) {
+export function Sidebar({ activeMenu = 'produk', onMenuSelect }) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'produk', label: 'Kelola Produk', icon: '📦' },
     { id: 'ulasan', label: 'Kelola Ulasan', icon: '💬' },
-    { id: 'pengguna', label: 'Pengguna', icon: '👥' },
-    { id: 'pengaturan', label: 'Pengaturan', icon: '⚙️' },
+    { id: 'feedback', label: 'Feedback Pengguna', icon: '📝' },
   ];
 
   const renderIcon = (icon) => {
@@ -34,7 +32,9 @@ export function Sidebar({ activeMenu = 'produk' }) {
             <li key={item.id}>
               <button
                 className={`nav-item ${activeMenu === item.id ? 'active' : ''}`}
-                onClick={() => console.log(`Navigating to ${item.id}`)}
+                onClick={() =>
+                  onMenuSelect ? onMenuSelect(item.id) : console.log(`Navigating to ${item.id}`)
+                }
               >
                 {renderIcon(item.icon)}
                 <span className="nav-label">{item.label}</span>

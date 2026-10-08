@@ -1,0 +1,51 @@
+.admin-placeholder {
+  max-width: 600px;
+  margin: 80px auto;
+  text-align: center;
+  color: #64748b;
+}
+
+.admin-placeholder h2 {
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 20px 32px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  margin-top: 24px;
+}
+
+.footer-brand {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.footer-desc {
+  font-size: 13px;
+  color: #64748b;
+  flex: 1;
+}
+
+.footer-links {
+  display: flex;
+  gap: 8px;
+}
+
+.footer-links button {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.footer-links button:hover {
+  color: #2563eb;
+}

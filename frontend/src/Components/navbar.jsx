@@ -9,6 +9,7 @@ export function Navbar({onNavigate}) {
                     <div className="navbar-links">
                         <a href="#Beranda" onClick={() => onNavigate('home')}>Beranda</a>
                         <a href="#Produk">Produk & Ulasan</a>
+                        <a href="#Kontak" onClick={(e) => { e.preventDefault(); onNavigate('kontak'); }}>Kontak</a>
                     </div>
             </div>
 

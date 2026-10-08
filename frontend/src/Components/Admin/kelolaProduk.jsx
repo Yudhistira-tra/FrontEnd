@@ -147,13 +147,13 @@ const [product, setProduct] = useState(initialProducts);
             type="text"
             placeholder="Cari Produk..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
 
         <select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={handleCategoryChange}
           className="filter-dropdown"
         >
           <option value="Semua">Semua Kategori</option>
@@ -167,7 +167,7 @@ const [product, setProduct] = useState(initialProducts);
 
         <select
           value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          onChange={handleStatusChange}
           className="status-dropdown"
         >
           <option value="Semua">Semua Status</option>
