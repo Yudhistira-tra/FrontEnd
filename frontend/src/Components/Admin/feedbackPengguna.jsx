@@ -8,7 +8,7 @@ function SummaryCard({ title, value, label, icon, accent, sub, subClass }) {
     <div className="card-container">
       <div className="card-top">
         <span className="card-title">{title}</span>
-        <span className="card-icon">{icon}</span>
+        {icon && <span className="card-icon">{icon}</span>}
       </div>
       <div className="card-value">
         <h2 className={accent}>{value}</h2>
@@ -64,6 +64,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
   const perluTindak = feedbacks.filter((f) => f.status === 'Belum Ditanggapi' || f.status === 'Sedang Ditinjau Tim Teknis').length;
   const selesai = feedbacks.filter((f) => f.status === 'Diimplementasikan' || f.status === 'Selesai').length;
   const selesaiPct = totalMasuk === 0 ? '0%' : `${Math.round((selesai / totalMasuk) * 1000) / 10}%`;
+  const baruBulanIni = feedbacks.filter((f) => /baru saja|menit|jam|hari|kemarin|minggu/i.test(f.timeAgo || '')).length;
 
   const cycleStatus = (f) => {
     const idx = feedbackStatuses.indexOf(f.status);
@@ -83,9 +84,6 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           <h1>Kritik, Saran &amp; Feedback Pengguna</h1>
           <p>Kelola masukan pengguna, laporan bug teknis, permintaan peninjauan produk baru, dan saran perbaikan fitur secara terpusat.</p>
         </div>
-        <button type="button" className="export-btn" onClick={() => alert('Ekspor CSV/Excel belum diimplementasikan (mock).')}>
-          ⬇ Ekspor Laporan (CSV/Excel)
-        </button>
       </div>
 
       <div className="cards">
@@ -93,15 +91,13 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           title="TOTAL MASUKAN MASUK"
           value={totalMasuk}
           label="Masukan"
-          icon="💬"
-          sub="↗ +12 bulan ini"
+          sub={`↗ +${baruBulanIni} bulan ini`}
           subClass="sub-green"
         />
         <SummaryCard
           title="PERLU DITINDAKLANJUTI"
           value={perluTindak}
           label="Tiket"
-          icon="📥"
           accent="text-red"
           sub="◷ Target respon di bawah 24 jam"
           subClass="sub-red"
@@ -110,7 +106,6 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           title="SELESAI / IMPLEMENTASI"
           value={selesai}
           label="Tiket"
-          icon="✓"
           sub={`● ${selesaiPct} Terselesaikan`}
           subClass="sub-blue"
         />
@@ -141,7 +136,6 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
         </div>
         <div className="fb-filter-right">
           <div className="search-box">
-            <span>🔍</span>
             <input
               type="text"
               placeholder="Cari pesan atau tiket..."
@@ -201,7 +195,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
                     </button>
                   ) : (
                     <button type="button" className="btn-light" onClick={() => alert(`${f.userName} <${f.email}>\n\n${f.title}\n\n${f.message}`)}>
-                      👁 Detail Masukan
+                      Detail Masukan
                     </button>
                   )}
                   <button type="button" className="btn-danger-link" onClick={() => onDelete && onDelete(f.id)}>

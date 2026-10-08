@@ -1,7 +1,7 @@
 import React from 'react';
 import './productCard.css';
 
-export function ProductCard({ id, image, category, title, price, rating, onClickDetail }) {
+export function ProductCard({ id, image, category, title, price, rating, onClickDetail, isSaved, onToggleSave }) {
   return (
     <div className="product-card">
       <div className="product-image-container">
@@ -18,15 +18,19 @@ export function ProductCard({ id, image, category, title, price, rating, onClick
           </p>
         </div>
         <div className="product-footer">
-          <button 
-            type="button" 
-            className="detail-btn" 
+          <button
+            type="button"
+            className="detail-btn"
             onClick={() => onClickDetail && onClickDetail(id)}
           >
             Detail & Ulasan &gt;
           </button>
-          <button type="button" className="save-btn">
-            <span>Simpan</span>
+          <button
+            type="button"
+            className={`save-btn ${isSaved ? 'saved' : ''}`}
+            onClick={() => onToggleSave && onToggleSave(id)}
+          >
+            <span>{isSaved ? '♥ Tersimpan' : '♡ Simpan'}</span>
           </button>
         </div>
       </div>

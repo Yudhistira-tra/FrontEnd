@@ -13,7 +13,7 @@ function CategoryButton({ label, isActive, onClick }) {
   );
 }
 
-export function HeroSection({ onSelectCategory, onSearch }) {
+export function HeroSection({ onSelectCategory, onSearch, currentUser, onNavigate }) {
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const categories = ['Semua', 'Smartphone', 'Laptop', 'Audio', 'Smartwatch', 'Tablet', 'Aksesoris'];
@@ -55,6 +55,19 @@ export function HeroSection({ onSelectCategory, onSearch }) {
             />
           ))}
         </div>
+        {!currentUser && (
+          <div className="community-bar">
+            <div className="community-left">
+              <div>
+                <strong>Bergabung dengan Komunitas WartaTekno <span className="guest-pill">Akses Guest</span></strong>
+                <p>Masuk untuk simpan wishlist gadget, beri rating independen, dan dapatkan notifikasi penurunan harga.</p>
+              </div>
+            </div>
+            <button type="button" className="community-btn" onClick={() => onNavigate && onNavigate('login')}>
+              Masuk / Daftar Sekarang
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

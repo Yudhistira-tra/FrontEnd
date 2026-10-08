@@ -182,15 +182,17 @@
 }
 
 .status-dropdown {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  background: #f1f5f9;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
+  background-color: #ffffff;
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: #334155;
   outline: none;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .fb-list {
@@ -348,7 +350,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 4px 0;
+  padding: 20px 4px 8px;
   flex-wrap: wrap;
   gap: 12px;
 }

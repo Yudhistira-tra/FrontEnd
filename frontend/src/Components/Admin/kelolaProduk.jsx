@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './KelolaProduk.css';
 import { Pagination } from '../Pagination';
+import { ProductModal } from './ProductModal';
 import plusIcon from '../../assets/Icon.png';
 import produkIcon from '../../assets/produk.png';
 import reviewIcon from '../../assets/Review.png';
@@ -8,7 +9,7 @@ import moderasiIcon from '../../assets/Moderasi.png';
 import filterIcon from '../../assets/Filter.png';
 import { initialProducts } from '../../data/mockData';
 
-function SummaryCard({ title, value, label, icon }) {
+function SummaryCard({ title, value, label, icon, sub, subClass }) {
   return (
     <div className="card-container">
       <span className="card-title">{title}</span>
@@ -19,30 +20,34 @@ function SummaryCard({ title, value, label, icon }) {
         </div>
         <div className="card-right">{icon}</div>
       </div>
+      {sub && <span className={`card-sub ${subClass || ''}`}>{sub}</span>}
     </div>
   );
 }
 
-export function KelolaProduk() {
+export function KelolaProduk({ products: productsProp, onAddProduct, onDeleteProduct }) {
 
-const [product, setProduct] = useState(initialProducts);
+  const [internalProducts, setInternalProducts] = useState(initialProducts);
+  const product = productsProp || internalProducts;
+  const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
+  const [appliedFilters, setAppliedFilters] = useState({ search: '', category: 'Semua', status: 'Semua' });
 
   const filteredProducts = product.filter((item) => {
     const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.sku && item.sku.toLowerCase().includes(searchQuery.toLowerCase()));
+      item.title.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+      (item.sku && item.sku.toLowerCase().includes(appliedFilters.search.toLowerCase()));
 
     const matchesCategory =
-      selectedCategory === 'Semua' || item.category === selectedCategory;
+      appliedFilters.category === 'Semua' || item.category === appliedFilters.category;
 
     const matchesStatus =
-      selectedStatus === 'Semua' || item.status === selectedStatus;
+      appliedFilters.status === 'Semua' || item.status === appliedFilters.status;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -52,16 +57,22 @@ const [product, setProduct] = useState(initialProducts);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
+  };
+
+  const handleFilterApply = () => {
+    setAppliedFilters({
+      search: searchQuery,
+      category: selectedCategory,
+      status: selectedStatus,
+    });
     setCurrentPage(1);
   };
 
@@ -72,9 +83,21 @@ const [product, setProduct] = useState(initialProducts);
   const endItem = Math.min(indexOfLastItem, totalItems);
 
   const handleDelete = (id) => {
-    if (window.confirm('Yakin ingin menghapus produk ini?')) {
-      setProduct(product.filter((p) => p.id !== id));
+    if (onDeleteProduct) {
+      onDeleteProduct(id);
+    } else if (window.confirm('Yakin ingin menghapus produk ini?')) {
+      setInternalProducts(internalProducts.filter((p) => p.id !== id));
     }
+  };
+
+  const handleSaveProduct = (newProduct) => {
+    if (onAddProduct) {
+      onAddProduct(newProduct);
+    } else {
+      setInternalProducts((prev) => [{ ...newProduct, id: `p-${Date.now()}` }, ...prev]);
+    }
+    setShowModal(false);
+    setCurrentPage(1);
   };
 
   const totalProducts = product.length;
@@ -95,6 +118,8 @@ const [product, setProduct] = useState(initialProducts);
       value: totalProducts.toLocaleString('id-ID'),
       label: 'Produk',
       icon: <img src={produkIcon} alt="Produk" />,
+      sub: `↗ +${totalProducts} bulan ini`,
+      subClass: 'sub-green',
     },
     {
       id: 2,
@@ -102,6 +127,8 @@ const [product, setProduct] = useState(initialProducts);
       value: totalReviews.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={reviewIcon} alt="Review" />,
+      sub: '● 98% Terverifikasi',
+      subClass: 'sub-blue',
     },
     {
       id: 3,
@@ -109,6 +136,8 @@ const [product, setProduct] = useState(initialProducts);
       value: pendingModeration.toLocaleString('id-ID'),
       label: 'Produk',
       icon: <img src={moderasiIcon} alt="Moderasi" />,
+      sub: 'Perlu verifikasi spesifikasi',
+      subClass: 'sub-orange',
     },
   ];
 
@@ -116,17 +145,22 @@ const [product, setProduct] = useState(initialProducts);
     <div className="kelola-produk-container">
       <div className="top-part">
         <div className="text-top-part">
-          <h1>Kelola Produk</h1>
+          <div className="breadcrumb">ADMIN PANEL <span>›</span> <span className="crumb-active">KATALOG PRODUK</span></div>
+          <h1>Kelola Produk Elektronik</h1>
           <p>
             Kelola katalog produk, spesifikasi teknis, harga pasar, dan status
             publikasi ulasan
           </p>
         </div>
-        <button className="add-btn">
+        <button className="add-btn" onClick={() => setShowModal(true)}>
           <img src={plusIcon} alt="Plus" />
           <span>Tambah Produk Baru</span>
         </button>
       </div>
+
+      {showModal && (
+        <ProductModal onClose={() => setShowModal(false)} onSave={handleSaveProduct} />
+      )}
 
       <div className="cards">
         {summaryCards.map((card) => (
@@ -136,18 +170,20 @@ const [product, setProduct] = useState(initialProducts);
             value={card.value}
             label={card.label}
             icon={card.icon}
+            sub={card.sub}
+            subClass={card.subClass}
           />
         ))}
       </div>
 
       <div className="filter-bar">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
           <input
             type="text"
             placeholder="Cari Produk..."
             value={searchQuery}
             onChange={handleSearchChange}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleFilterApply(); }}
           />
         </div>
 
@@ -175,7 +211,7 @@ const [product, setProduct] = useState(initialProducts);
           <option value="Draf">Draf</option>
         </select>
 
-        <button className='filter-btn'>
+        <button className='filter-btn' onClick={handleFilterApply}>
             <img src={filterIcon} alt="Plus" style={{ width: '17px', height: '17px' }}/>
             <span>Filter</span>
         </button>
@@ -195,7 +231,7 @@ const [product, setProduct] = useState(initialProducts);
             </tr>
           </thead>
           <tbody>
-            {totalItems.length === 0 ? (
+            {totalItems === 0 ? (
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '32px' }}>
                   Tidak ada produk yang ditemukan.

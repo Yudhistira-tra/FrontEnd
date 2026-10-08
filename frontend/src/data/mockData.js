@@ -88,7 +88,8 @@ export const initialComments = [
     rating: 5.0,
     comment: "Keyboard ThinkPad tetap yang terbaik untuk mengetik seharian. Daya tahan baterai dapat 9 jam lebih untuk browsing dan coding ringan.",
     createdAt: "2 hari yang lalu",
-    status: "Disetujui"
+    status: "Disetujui",
+    likes: 12
   },
   {
     id: "c2",
@@ -98,7 +99,26 @@ export const initialComments = [
     rating: 1.0,
     comment: "Kunjungi tautan judi online ini untuk slot gacor...",
     createdAt: "3 Jam lalu",
-    status: "Spam"
+    status: "Spam",
+    likes: 0
+  },
+  {
+    id: "c6",
+    productId: "thinkpad-x1-gen11",
+    userName: "Dimas Nugroho",
+    userRole: "Member",
+    rating: 4.0,
+    comment: "Apakah RAM-nya bisa di-upgrade sendiri di kemudian hari atau sudah tersolder?",
+    createdAt: "4 hari yang lalu",
+    status: "Disetujui",
+    likes: 3,
+    reply: {
+      author: "WartaTekno Staff",
+      role: "Editorial Staff",
+      timeAgo: "3 hari yang lalu",
+      text: "Halo Dimas, RAM pada ThinkPad X1 Carbon Gen 11 tersolder permanen (soldered), jadi pastikan memilih kapasitas yang cukup sejak awal pembelian.",
+      helpful: 8
+    }
   },
   {
     id: "c3",
@@ -143,6 +163,21 @@ export const feedbackStatuses = [
   "Sedang Ditinjau Tim Teknis",
   "Diimplementasikan",
   "Selesai"
+];
+
+export const mockUsers = [
+  {
+    name: "Admin Redaksi",
+    email: "admin@wartatekno.id",
+    password: "admin123",
+    role: "admin"
+  },
+  {
+    name: "Budi Santoso",
+    email: "budi.santoso@email.com",
+    password: "member123",
+    role: "member"
+  }
 ];
 
 export const initialFeedbacks = [

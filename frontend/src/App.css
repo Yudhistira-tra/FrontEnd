@@ -1,8 +1,15 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .admin-placeholder {
   max-width: 600px;
   margin: 80px auto;
   text-align: center;
   color: #64748b;
+  flex: 1;
 }
 
 .admin-placeholder h2 {
@@ -13,28 +20,48 @@
 .app-footer {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
   padding: 20px 32px;
   border-top: 1px solid #e2e8f0;
   background: #fff;
-  margin-top: 24px;
+  margin-top: auto;
+}
+
+.app-footer-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-footer.admin-offset {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
 }
 
 .footer-brand {
-  font-weight: 800;
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
   color: #0f172a;
+}
+
+.footer-brand span {
+  color: #2563eb;
 }
 
 .footer-desc {
   font-size: 13px;
   color: #64748b;
-  flex: 1;
 }
 
 .footer-links {
   display: flex;
   gap: 8px;
+  margin-left: auto;
 }
 
 .footer-links button {

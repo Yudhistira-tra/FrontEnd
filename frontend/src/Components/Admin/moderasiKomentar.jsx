@@ -7,7 +7,7 @@ import reviewIcon from '../../assets/Review.png';
 import filterIcon from '../../assets/Filter.png';
 import { initialComments, initialProducts } from '../../data/mockData';
 
-function SummaryCard({ title, value, label, icon }) {
+function SummaryCard({ title, value, label, icon, sub, subClass }) {
   return (
     <div className="card-container">
       <span className="card-title">{title}</span>
@@ -18,6 +18,7 @@ function SummaryCard({ title, value, label, icon }) {
         </div>
         <div className="card-right">{icon}</div>
       </div>
+      {sub && <span className={`card-sub ${subClass || ''}`}>{sub}</span>}
     </div>
   );
 }
@@ -34,14 +35,15 @@ export function ModerasiKomentar() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
+  const [appliedFilters, setAppliedFilters] = useState({ search: '', status: 'Semua' });
 
   const filteredComments = comments.filter((item) => {
     const matchesSearch =
-      item.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.comment.toLowerCase().includes(searchQuery.toLowerCase());
+      item.userName.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+      item.comment.toLowerCase().includes(appliedFilters.search.toLowerCase());
 
     const matchesStatus =
-      selectedStatus === 'Semua' || item.status === selectedStatus;
+      appliedFilters.status === 'Semua' || item.status === appliedFilters.status;
 
     return matchesSearch && matchesStatus;
   });
@@ -51,11 +53,14 @@ export function ModerasiKomentar() {
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
+  };
+
+  const handleFilterApply = () => {
+    setAppliedFilters({ search: searchQuery, status: selectedStatus });
     setCurrentPage(1);
   };
 
@@ -86,6 +91,7 @@ export function ModerasiKomentar() {
   const totalComments = comments.length;
   const pendingCount = comments.filter((c) => c.status === 'Menunggu').length;
   const approvedCount = comments.filter((c) => c.status === 'Disetujui').length;
+  const approvedPct = totalComments === 0 ? '0%' : `${Math.round((approvedCount / totalComments) * 1000) / 10}%`;
 
   const summaryCards = [
     {
@@ -94,6 +100,8 @@ export function ModerasiKomentar() {
       value: totalComments.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={komentarIcon} alt="Ulasan" />,
+      sub: `↗ +${totalComments} bulan ini`,
+      subClass: 'sub-green',
     },
     {
       id: 2,
@@ -101,6 +109,8 @@ export function ModerasiKomentar() {
       value: pendingCount.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={moderasiIcon} alt="Moderasi" />,
+      sub: '◷ Perlu ditinjau < 24 jam',
+      subClass: 'sub-red',
     },
     {
       id: 3,
@@ -108,6 +118,8 @@ export function ModerasiKomentar() {
       value: approvedCount.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={reviewIcon} alt="Tersetuju" />,
+      sub: `● ${approvedPct} Disetujui`,
+      subClass: 'sub-blue',
     },
   ];
 
@@ -115,6 +127,7 @@ export function ModerasiKomentar() {
     <div className="moderasi-container">
       <div className="top-part">
         <div className="text-top-part">
+          <div className="breadcrumb">ADMIN PANEL <span>›</span> <span className="crumb-active">MODERASI KOMENTAR</span></div>
           <h1>Moderasi Komentar</h1>
           <p>
             Tinjau ulasan pengguna, setujui untuk ditampilkan, atau tandai sebagai spam
@@ -130,18 +143,20 @@ export function ModerasiKomentar() {
             value={card.value}
             label={card.label}
             icon={card.icon}
+            sub={card.sub}
+            subClass={card.subClass}
           />
         ))}
       </div>
 
       <div className="filter-bar">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
           <input
             type="text"
             placeholder="Cari pengguna atau ulasan..."
             value={searchQuery}
             onChange={handleSearchChange}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleFilterApply(); }}
           />
         </div>
 
@@ -156,7 +171,7 @@ export function ModerasiKomentar() {
           <option value="Spam">Spam</option>
         </select>
 
-        <button className="filter-btn">
+        <button className="filter-btn" onClick={handleFilterApply}>
           <img src={filterIcon} alt="Filter" style={{ width: '17px', height: '17px' }} />
           <span>Filter</span>
         </button>
