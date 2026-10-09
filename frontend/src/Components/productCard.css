@@ -143,6 +143,17 @@ flex: 1;
     color: #475569;
 }
 
+.save-icon-img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+/* White icon on the blue (saved) state; original color on light bg */
+.save-btn.saved .save-icon-img {
+    filter: brightness(0) invert(1);
+}
+
 .save-btn:hover {
     background-color: #e2e8f0;
     border-color: #94a3b8;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './ProductDetail.css';
 import { initialProducts, initialComments } from '../data/mockData';
+import saveIcon from '../assets/Icon (9).png';
 
 function initials(name) {
   if (!name) return '?';
@@ -120,6 +121,7 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
                 className={`fav-btn ${isSaved ? 'active' : ''}`}
                 onClick={() => onToggleSave && onToggleSave(product.id)}
               >
+                <img src={saveIcon} alt="" className="fav-icon" />
                 {isSaved ? 'Tersimpan di Favorit' : 'Simpan ke Favorit'}
               </button>
               <button

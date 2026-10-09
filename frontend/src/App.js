@@ -8,6 +8,8 @@ import { Authentication } from './pages/Authentication.jsx';
 import { ProductDetail } from './pages/ProductDetail.jsx';
 import { Feedback } from './pages/Feedback.jsx';
 import { KoleksiTersimpan } from './pages/KoleksiTersimpan.jsx';
+import { About } from './pages/About.jsx';
+import warningIcon from './assets/Icon-4.png';
 import { initialProducts, initialFeedbacks } from './data/mockData.js';
 import { KelolaProduk } from './Components/Admin/kelolaProduk.jsx'
 import { ModerasiKomentar } from './Components/Admin/moderasiKomentar.jsx'
@@ -189,6 +191,7 @@ function App() {
       {activePage === 'admin' && (
         currentUser?.role !== 'admin' ? (
           <div className="admin-placeholder">
+            <img src={warningIcon} alt="" className="placeholder-icon" />
             <h2>Akses Ditolak</h2>
             <p>Halaman admin hanya untuk peran Admin. Silakan masuk sebagai admin.</p>
             <button type="button" className="feedback-submit" style={{ maxWidth: 240, margin: '12px auto 0' }} onClick={() => setActivePage('login')}>
@@ -226,6 +229,10 @@ function App() {
         />
       )}
 
+      {activePage === 'tentang' && (
+        <About onBackToHome={() => setActivePage('home')} />
+      )}
+
       {(activePage === 'login' || activePage === 'register') && (
         <main className="auth-container">
           <Authentication
@@ -243,6 +250,7 @@ function App() {
         <nav className="footer-links">
           <button type="button" onClick={() => setActivePage('home')}>Beranda</button>
           <button type="button" onClick={() => setActivePage('kontak')}>Kontak</button>
+          <button type="button" onClick={() => setActivePage('tentang')}>Tentang Kami</button>
           {currentUser?.role === 'admin' && (
             <button type="button" onClick={() => { setActivePage('admin'); setActiveAdminMenu('feedback'); }}>Kelola</button>
           )}

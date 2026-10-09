@@ -1,5 +1,6 @@
 import React from 'react';
 import './productCard.css';
+import saveIcon from '../assets/Icon (9).png';
 
 export function ProductCard({ id, image, category, title, price, rating, onClickDetail, isSaved, onToggleSave }) {
   return (
@@ -30,7 +31,8 @@ export function ProductCard({ id, image, category, title, price, rating, onClick
             className={`save-btn ${isSaved ? 'saved' : ''}`}
             onClick={() => onToggleSave && onToggleSave(id)}
           >
-            <span>{isSaved ? '♥ Tersimpan' : '♡ Simpan'}</span>
+            <img src={saveIcon} alt="" className="save-icon-img" />
+            <span>{isSaved ? 'Tersimpan' : 'Simpan'}</span>
           </button>
         </div>
       </div>

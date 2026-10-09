@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Feedback.css';
 import { feedbackCategories } from '../data/mockData';
+import messageIcon from '../assets/Icon-3.png';
 
 export function Feedback({ onSubmit, onBackToHome }) {
   const [formData, setFormData] = useState({
@@ -42,6 +43,7 @@ export function Feedback({ onSubmit, onBackToHome }) {
       </header>
 
       <div className="feedback-hero">
+        <img src={messageIcon} alt="" className="hero-icon" />
         <span className="feedback-eyebrow">KONTAK & MASUKAN</span>
         <h1>Kritik, Saran & Feedback</h1>
         <p>

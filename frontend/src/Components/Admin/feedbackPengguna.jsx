@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import './FeedbackPengguna.css';
 import { Pagination } from '../Pagination';
 import { feedbackCategories, feedbackStatuses } from '../../data/mockData';
+import mailIcon from '../../assets/Icon-1.png';
+import clockIcon from '../../assets/Icon-6.png';
+import checkGreenIcon from '../../assets/Icon-5.png';
+import checkBlueIcon from '../../assets/Icon-2.png';
 
 function SummaryCard({ title, value, label, icon, accent, sub, subClass }) {
   return (
@@ -91,6 +95,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           title="TOTAL MASUKAN MASUK"
           value={totalMasuk}
           label="Masukan"
+          icon={<img src={mailIcon} alt="Masukan" />}
           sub={`↗ +${baruBulanIni} bulan ini`}
           subClass="sub-green"
         />
@@ -98,6 +103,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           title="PERLU DITINDAKLANJUTI"
           value={perluTindak}
           label="Tiket"
+          icon={<img src={clockIcon} alt="Perlu tindak lanjut" />}
           accent="text-red"
           sub="◷ Target respon di bawah 24 jam"
           subClass="sub-red"
@@ -106,6 +112,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
           title="SELESAI / IMPLEMENTASI"
           value={selesai}
           label="Tiket"
+          icon={<img src={checkGreenIcon} alt="Selesai" />}
           sub={`● ${selesaiPct} Terselesaikan`}
           subClass="sub-blue"
         />
@@ -191,7 +198,7 @@ export function FeedbackPengguna({ feedbacks, onStatusChange, onDelete }) {
                   </button>
                   {f.status !== 'Selesai' && f.status !== 'Diimplementasikan' ? (
                     <button type="button" className="btn-primary" onClick={() => markDone(f)}>
-                      ✓ Tandai Selesai
+                      <img src={checkBlueIcon} alt="" className="btn-icon" /> Tandai Selesai
                     </button>
                   ) : (
                     <button type="button" className="btn-light" onClick={() => alert(`${f.userName} <${f.email}>\n\n${f.title}\n\n${f.message}`)}>

@@ -229,9 +229,20 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .fav-btn:hover { background: #1d4ed8; }
+
+.fav-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 
 .review-btn {
   flex: 1;

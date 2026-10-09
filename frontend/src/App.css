@@ -17,6 +17,13 @@
   margin-bottom: 8px;
 }
 
+.placeholder-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
 .app-footer {
   display: flex;
   align-items: center;
