@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# WartaTekno
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Portal ulasan dan spesifikasi gadget independen — proyek tugas akhir.
 
-## Available Scripts
+- **Frontend** — React 19 (Create React App) di `frontend/`, jalan di `http://localhost:3000`
+- **Backend** — Laravel 13 + Sanctum di `backend/`, REST API di `http://127.0.0.1:8000/api/v1`
+- **Database** — SQLite (default, tidak perlu PostgreSQL)
+- Kontrak API: [API_CONTRACT.md](API_CONTRACT.md), catatan integrasinya di [INTEGRASI_FRONTEND_BACKEND.md](INTEGRASI_FRONTEND_BACKEND.md)
+- Mockup desain: folder `Design/`
 
-In the project directory, you can run:
+## Menjalankan aplikasi
 
-### `npm start`
+Prasyarat: Node 18+, PHP **8.3 atau lebih baru** (sudah diuji di 8.5), Composer.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Backend
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+cd backend
+composer install
+cp .env.example .env          # Windows: copy .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve --host=127.0.0.1 --port=8000
+```
 
-### `npm test`
+`.env.example` sudah mengarah ke SQLite (`DB_CONNECTION=sqlite`), jadi tidak perlu membuat
+database sendiri — `migrate` akan membuat `backend/database/database.sqlite`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Kalau PHP di mesin kamu 8.2 atau lebih lama, `composer install` akan gagal
+(`symfony/*` v8 butuh PHP 8.4+). Di Windows, unduh ZIP "PHP 8.x NTS Windows", extract ke
+misalnya `C:\php-8.5-portable`, buat `php.ini` di dalamnya dengan:
 
-### `npm run build`
+```ini
+extension_dir = "C:\php-8.5-portable\ext"
+extension=mbstring
+extension=openssl
+extension=fileinfo
+extension=curl
+extension=pdo_sqlite
+extension=sqlite3
+extension=zip
+extension=intl
+extension=gd
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+lalu jalankan perintah di atas dengan `C:\php-8.5-portable\php.exe artisan ...`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2. Frontend (terminal terpisah)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd frontend
+npm install
+npm start
+```
 
-### `npm run eject`
+Buka `http://localhost:3000`. Alamat API bisa diganti lewat `REACT_APP_API_URL` di
+`frontend/.env`; default-nya sudah `http://127.0.0.1:8000/api/v1`.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+> Kalau muncul **"Failed to fetch"**, hampir selalu berarti `php artisan serve` mati —
+> cek terminal backend, jalankan ulang, lalu refresh browser.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Akun demo
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| Email | Password | Peran |
+| --- | --- | --- |
+| `admin@wartatekno.id` | `password` | Admin — membuka panel katalog |
+| `budi@wartatekno.id` | `password` | Member — ulasan, komentar, simpan produk |
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Untuk mengembalikan data contoh sebelum demo:
 
-## Learn More
+```bash
+cd backend && php artisan migrate:fresh --seed
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Fitur
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**Publik** — katalog produk dengan filter kategori dan pencarian, halaman detail produk
+(spesifikasi, harga referensi, diskusi komentar), tulis ulasan + rating, like komentar,
+koleksi tersimpan (wishlist), form masukan/feedback, halaman Tentang Kami.
 
-### Code Splitting
+**Admin** — Kelola Produk (tambah, edit, aktifkan produk draf, hapus, buka detail),
+Moderasi Komentar (setujui, tandai spam, hapus), Feedback Pengguna (ubah status,
+tandai selesai, hapus).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Catatan yang diketahui
 
-### Analyzing the Bundle Size
+Diwarisi dari proses integrasi FE-BE, belum dibereskan:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Kartu statistik admin menampilkan placeholder: "+N bulan ini" hanya mengulang total, dan
+  "98% Terverifikasi" adalah angka tetap.
+- Produk tanpa ulasan menampilkan ★0 di kartu katalog tapi ★5 di kolom rating tabel admin.
+- Balasan admin di halaman detail tampil sebagai kartu kosong (nama field tidak cocok).
+- Status "Menunggu" di moderasi komentar tidak pernah ditulis backend — komentar langsung
+  publish, kecuali berisi tautan (otomatis ditandai Spam).
+- Pencarian lewat API (`?search=`) memakai `ilike` khusus PostgreSQL, jadi mengembalikan
+  500 di SQLite. Aplikasi web tidak terpengaruh karena filter berjalan di sisi klien.
+- Upload gambar produk belum tersedia di backend; modal hanya menerima URL gambar.
+- Balasan komentar hanya 1 level, dan timestamp masih format ISO mentah.

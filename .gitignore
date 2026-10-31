@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# dependencies di subfolder (frontend/node_modules)
+node_modules/
+
+# jangan ikut ter-commit
+/backend/wartatekno-backend.zip
+services.tmp
+*.sqlite
+*.sqlite-journal
