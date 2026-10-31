@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './ProductDetail.css';
-import { initialProducts, initialComments } from '../data/mockData';
+import { getComments, postComment, likeComment, getProduct } from '../services/api';
 import saveIcon from '../assets/Icon (9).png';
 
 function initials(name) {
@@ -9,37 +9,43 @@ function initials(name) {
 }
 
 export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBackToGrid, currentUser, onRequireLogin, isSaved, onToggleSave }) {
-  const catalog = products && products.length > 0 ? products : initialProducts;
-  const product = catalog.find((p) => p.id === productId) || catalog[0];
+  const catalog = products || [];
+  const [detailProduct, setDetailProduct] = useState(null);
+  const product = detailProduct || catalog.find((p) => String(p.id) === String(productId));
   const isGuest = !currentUser;
 
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const [comments, setComments] = useState(
-    initialComments
-      .filter((c) => c.productId === product.id && c.status !== 'Spam')
-      .map((c) => ({ ...c, likes: c.likes || 0 }))
-  );
+  const [comments, setComments] = useState([]);
+  const [loadError, setLoadError] = useState('');
+  React.useEffect(() => {
+    let active = true;
+    setDetailProduct(null);
+    setLoadError('');
+    if (productId) getProduct(productId).then((item) => { if (active) setDetailProduct(item); }).catch((err) => { if (active) setLoadError(err.message); });
+    return () => { active = false; };
+  }, [productId]);
+  React.useEffect(() => { if (productId) getComments(productId).then(setComments).catch(err => setLoadError(err.message)); }, [productId]);
 
   const [likedIds, setLikedIds] = useState([]);
+  React.useEffect(() => { setLikedIds(comments.filter(c => c.likedByMe).map(c => c.id)); }, [comments]);
 
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
 
-  const imagesList = product.images && product.images.length > 0
+  const imagesList = product?.images && product.images.length > 0
     ? product.images
-    : [product.image];
+    : [product?.image].filter(Boolean);
 
   const handleLike = (commentId) => {
     if (isGuest) {
       if (onRequireLogin) onRequireLogin();
       return;
     }
-    const hasLiked = likedIds.includes(commentId);
-    setComments((prev) =>
-      prev.map((c) => (c.id === commentId ? { ...c, likes: (c.likes || 0) + (hasLiked ? -1 : 1) } : c))
-    );
-    setLikedIds((prev) => (hasLiked ? prev.filter((id) => id !== commentId) : [...prev, commentId]));
+    likeComment(commentId).then(result => {
+      setComments(prev => prev.map(c => String(c.id) === String(commentId) ? { ...c, likes: result.upvotes_count } : c));
+      setLikedIds(prev => result.liked ? [...prev, commentId] : prev.filter(id => id !== commentId));
+    }).catch(err => alert(err.message));
   };
 
   const handleReply = (userName) => {
@@ -51,27 +57,18 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
     document.getElementById('review-textarea')?.focus();
   };
 
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
     if (isGuest || !newComment.trim()) return;
 
-    const commentObj = {
-      id: `c-${Date.now()}`,
-      productId: product.id,
-      userName: currentUser?.name || 'User Terverifikasi',
-      userRole: currentUser?.role === 'admin' ? 'Admin' : 'Member Terverifikasi',
-      rating: newRating,
-      createdAt: 'Baru saja',
-      comment: newComment,
-      likes: 0
-    };
-
-    setComments([commentObj, ...comments]);
-    setNewComment('');
+    try { await postComment(productId, newComment, newRating); const refreshed = await getComments(productId); setComments(refreshed); setNewComment(''); } catch (err) { alert(err.message); }
   };
+
+  if (!product) return <div className="product-detail-page"><p>Memuat detail produk atau produk tidak ditemukan.</p><button onClick={onBackToGrid}>Kembali ke Katalog</button></div>;
 
   return (
     <div className="product-detail-page">
+      {loadError && <p role="alert">Gagal memuat komentar: {loadError}</p>}
       <header className="product-detail-header">
         <button type="button" onClick={onBackToGrid} className="back-button">
           &larr; Kembali ke Katalog

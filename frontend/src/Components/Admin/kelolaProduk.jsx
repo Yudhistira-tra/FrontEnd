@@ -7,7 +7,7 @@ import produkIcon from '../../assets/produk.png';
 import reviewIcon from '../../assets/Review.png';
 import moderasiIcon from '../../assets/Moderasi.png';
 import filterIcon from '../../assets/Filter.png';
-import { initialProducts } from '../../data/mockData';
+
 
 function SummaryCard({ title, value, label, icon, sub, subClass }) {
   return (
@@ -25,11 +25,11 @@ function SummaryCard({ title, value, label, icon, sub, subClass }) {
   );
 }
 
-export function KelolaProduk({ products: productsProp, onAddProduct, onDeleteProduct }) {
+export function KelolaProduk({ products: productsProp, categories = [], onAddProduct, onUpdateProduct, onDeleteProduct }) {
 
-  const [internalProducts, setInternalProducts] = useState(initialProducts);
-  const product = productsProp || internalProducts;
+  const product = productsProp || [];
   const [showModal, setShowModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
@@ -82,23 +82,9 @@ export function KelolaProduk({ products: productsProp, onAddProduct, onDeletePro
   const startItem = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const endItem = Math.min(indexOfLastItem, totalItems);
 
-  const handleDelete = (id) => {
-    if (onDeleteProduct) {
-      onDeleteProduct(id);
-    } else if (window.confirm('Yakin ingin menghapus produk ini?')) {
-      setInternalProducts(internalProducts.filter((p) => p.id !== id));
-    }
-  };
+  const handleDelete = (id) => { if (window.confirm('Yakin ingin menghapus produk ini?')) onDeleteProduct && onDeleteProduct(id); };
 
-  const handleSaveProduct = (newProduct) => {
-    if (onAddProduct) {
-      onAddProduct(newProduct);
-    } else {
-      setInternalProducts((prev) => [{ ...newProduct, id: `p-${Date.now()}` }, ...prev]);
-    }
-    setShowModal(false);
-    setCurrentPage(1);
-  };
+  const handleSaveProduct = async (newProduct) => { try { if (editingProduct) await onUpdateProduct(newProduct); else if (onAddProduct) await onAddProduct(newProduct); setShowModal(false); setEditingProduct(null); setCurrentPage(1); } catch (err) { alert(err.message); } };
 
   const totalProducts = product.length;
 
@@ -152,14 +138,14 @@ export function KelolaProduk({ products: productsProp, onAddProduct, onDeletePro
             publikasi ulasan
           </p>
         </div>
-        <button className="add-btn" onClick={() => setShowModal(true)}>
+        <button className="add-btn" onClick={() => { setEditingProduct(null); setShowModal(true); }}>
           <img src={plusIcon} alt="Plus" />
           <span>Tambah Produk Baru</span>
         </button>
       </div>
 
       {showModal && (
-        <ProductModal onClose={() => setShowModal(false)} onSave={handleSaveProduct} />
+        <ProductModal onClose={() => { setShowModal(false); setEditingProduct(null); }} onSave={handleSaveProduct} initialProduct={editingProduct} categories={categories} />
       )}
 
       <div className="cards">
@@ -193,12 +179,9 @@ export function KelolaProduk({ products: productsProp, onAddProduct, onDeletePro
           className="filter-dropdown"
         >
           <option value="Semua">Semua Kategori</option>
-          <option value="Smartphone">Smartphone</option>
-          <option value="Laptop">Laptop</option>
-          <option value="Aksesoris">Aksesoris</option>
-          <option value="Audio">Audio</option>
-          <option value="Smartwatch">Smartwatch</option>
-          <option value="Tablet">Tablet</option>
+          {categories.map((category) => (
+            <option key={category.id || category.slug} value={category.name}>{category.name}</option>
+          ))}
         </select>
 
         <select
@@ -286,13 +269,13 @@ export function KelolaProduk({ products: productsProp, onAddProduct, onDeletePro
                     </button>
                     <button
                       className="btn-action link-edit"
-                      onClick={() => console.log('Edit', p.id)}
+                      onClick={() => { setEditingProduct(p); setShowModal(true); }}
                     >
                       Edit
                     </button>
                     <button
                       className="btn-action link-delete"
-                      onClick={() => handleDelete(p.id)}
+                      onClick={() => handleDelete(p.databaseId)}
                     >
                       Hapus
                     </button>

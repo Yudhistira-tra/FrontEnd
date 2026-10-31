@@ -13,10 +13,10 @@ function CategoryButton({ label, isActive, onClick }) {
   );
 }
 
-export function HeroSection({ onSelectCategory, onSearch, currentUser, onNavigate }) {
+export function HeroSection({ onSelectCategory, onSearch, currentUser, onNavigate, categories: categoryOptions = [] }) {
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const categories = ['Semua', 'Smartphone', 'Laptop', 'Audio', 'Smartwatch', 'Tablet', 'Aksesoris'];
+  const categories = ['Semua', ...(categoryOptions.length ? categoryOptions.map((c) => c.name || c) : ['Smartphone', 'Laptop', 'Audio', 'Smartwatch', 'Tablet', 'Aksesoris'])];
 
   const handleCategoryClick = (category) => {
     setActiveCategory(category);

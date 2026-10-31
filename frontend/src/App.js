@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { Navbar } from './Components/navbar.jsx';
 import { HeroSection } from './Components/HeroSection.jsx';
@@ -10,7 +10,7 @@ import { Feedback } from './pages/Feedback.jsx';
 import { KoleksiTersimpan } from './pages/KoleksiTersimpan.jsx';
 import { About } from './pages/About.jsx';
 import warningIcon from './assets/Icon-4.png';
-import { initialProducts, initialFeedbacks } from './data/mockData.js';
+import { getProducts, getMe, getSaved, saveProduct, unsaveProduct, logout, postFeedback, getToken, createProduct, updateProduct, deleteProduct, getAdminFeedbacks, updateFeedbackStatus, removeFeedback, getAdminProducts, getCategories } from './services/api';
 import { KelolaProduk } from './Components/Admin/kelolaProduk.jsx'
 import { ModerasiKomentar } from './Components/Admin/moderasiKomentar.jsx'
 import { FeedbackPengguna } from './Components/Admin/feedbackPengguna.jsx'
@@ -23,17 +23,32 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeAdminMenu, setActiveAdminMenu] = useState('produk');
-  const [feedbacks, setFeedbacks] = useState(initialFeedbacks);
-  const [products, setProducts] = useState(initialProducts);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [dataError, setDataError] = useState('');
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [currentUser, setCurrentUser] = useState(null); // null = guest, {name,email,role}
   const [savedIds, setSavedIds] = useState([]);
+  const [savedProductItems, setSavedProductItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    if (activePage === 'admin' && activeAdminMenu === 'produk' && currentUser?.role === 'admin') getAdminProducts().then(setProducts).catch(err => setDataError(err.message));
+    if (activePage === 'admin' && activeAdminMenu === 'feedback' && currentUser?.role === 'admin') getAdminFeedbacks().then(r => setFeedbacks(r.feedbacks)).catch(err => setDataError(err.message));
+  }, [activePage, activeAdminMenu, currentUser]);
+
+  useEffect(() => {
+    getProducts({ per_page: 50 }).then(setProducts).catch(err => setDataError(err.message)).finally(() => setLoadingProducts(false));
+    getCategories().then(setCategories).catch(err => console.warn('Gagal memuat kategori:', err.message));
+    if (getToken()) getMe().then(async user => { setCurrentUser(user); if (user.role === 'admin') { setActivePage('admin'); setActiveAdminMenu('produk'); } const saved = await getSaved(); setSavedProductItems(saved); setSavedIds(saved.map(p => p.id)); }).catch(() => { localStorage.removeItem('wartatekno_token'); });
+  }, []);
 
   const productsPerPage = 10;
 
   const filteredProducts = products.filter((p) => {
     const matchesCategory = selectedCategory === 'Semua' || p.category === selectedCategory;
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+                          (p.brand || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -47,33 +62,19 @@ function App() {
     setActivePage('detail');
   };
 
-  const handleAddFeedback = ({ userName, email, category, title, message }) => {
-    const newTicket = {
-      id: `f-${Date.now()}`,
-      category,
-      userName,
-      email,
-      timeAgo: 'Baru saja',
-      title,
-      message,
-      tags: [],
-      status: 'Belum Ditanggapi',
-    };
-    setFeedbacks((prev) => [newTicket, ...prev]);
-  };
+  const handleAddFeedback = async (data) => { await postFeedback(data); };
 
-  const handleFeedbackStatusChange = (id, nextStatus) => {
-    setFeedbacks((prev) => prev.map((f) => (f.id === id ? { ...f, status: nextStatus } : f)));
-  };
+  const handleFeedbackStatusChange = (id, nextStatus) => updateFeedbackStatus(id, nextStatus).then(() => getAdminFeedbacks().then(r => setFeedbacks(r.feedbacks))).catch(err => alert(err.message));
 
   const handleFeedbackDelete = (id) => {
     if (window.confirm('Yakin ingin menghapus masukan ini?')) {
-      setFeedbacks((prev) => prev.filter((f) => f.id !== id));
+      removeFeedback(id).then(() => setFeedbacks(prev => prev.filter(f => String(f.id) !== String(id)))).catch(err => alert(err.message));
     }
   };
 
-  const handleLogin = (user) => {
+  const handleLogin = async (user) => {
     setCurrentUser(user);
+    try { const saved = await getSaved(); setSavedProductItems(saved); setSavedIds(saved.map(p => p.id)); } catch (err) { console.warn(err); }
     if (user.role === 'admin') {
       setActiveAdminMenu('produk');
       setActivePage('admin');
@@ -82,18 +83,15 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setActivePage('home');
-  };
+  const handleLogout = async () => { try { await logout(); } catch (_) {} setCurrentUser(null); setSavedIds([]); setSavedProductItems([]); setActivePage('home'); };
 
-  const handleAddProduct = (newProduct) => {
-    setProducts((prev) => [{ ...newProduct, id: `p-${Date.now()}` }, ...prev]);
-  };
+  const handleAddProduct = async (newProduct) => { const saved = await createProduct(newProduct); setProducts(prev => [saved, ...prev]); };
+
+  const handleUpdateProduct = async (product) => { const updated = await updateProduct(product); setProducts(prev => prev.map(p => p.databaseId === updated.databaseId ? updated : p)); };
 
   const handleDeleteProduct = (id) => {
     if (window.confirm('Yakin ingin menghapus produk ini?')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      deleteProduct(id).then(() => setProducts((prev) => prev.filter((p) => String(p.databaseId) !== String(id)))).catch(err => alert(err.message));
     }
   };
 
@@ -102,10 +100,15 @@ function App() {
       setActivePage('login');
       return;
     }
-    setSavedIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+    const already = savedIds.includes(id);
+    (already ? unsaveProduct(product.databaseId) : saveProduct(product.databaseId))
+      .then(async () => { const saved = await getSaved(); setSavedProductItems(saved); setSavedIds(saved.map(p => p.id)); })
+      .catch(err => alert(err.message));
   };
 
-  const savedProducts = products.filter((p) => savedIds.includes(p.id));
+  const savedProducts = savedProductItems;
 
   return (
     <div className="App">
@@ -130,7 +133,10 @@ function App() {
             }}
             currentUser={currentUser}
             onNavigate={(page) => setActivePage(page)}
+            categories={categories}
           />
+          {dataError && <p role="alert" style={{padding:'16px', color:'#b91c1c'}}>Gagal memuat katalog: {dataError}</p>}
+          {loadingProducts && <p style={{padding:'16px'}}>Memuat produk dari database...</p>}
           <main className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', padding: '20px' }}>
             {currentProducts.map((product) => (
               <ProductCard
@@ -180,7 +186,7 @@ function App() {
           <KoleksiTersimpan
             savedProducts={savedProducts}
             currentUser={currentUser}
-            onRemove={(id) => setSavedIds((prev) => prev.filter((s) => s !== id))}
+            onRemove={async (id) => { const p = savedProductItems.find(x => x.id === id); if (p) { try { await unsaveProduct(p.databaseId); const saved = await getSaved(); setSavedProductItems(saved); setSavedIds(saved.map(x => x.id)); } catch (err) { alert(err.message); } } }}
             onOpenDetail={(id) => { setSelectedProductId(id); setActivePage('detail'); }}
             onBackToHome={() => setActivePage('home')}
             onBrowse={() => setActivePage('home')}
@@ -203,7 +209,7 @@ function App() {
           activeMenu={activeAdminMenu}
           onMenuSelect={setActiveAdminMenu}
         >
-          {activeAdminMenu === 'produk' && <KelolaProduk products={products} onAddProduct={handleAddProduct} onDeleteProduct={handleDeleteProduct} />}
+          {activeAdminMenu === 'produk' && <KelolaProduk products={products} categories={categories} onAddProduct={handleAddProduct} onUpdateProduct={handleUpdateProduct} onDeleteProduct={handleDeleteProduct} />}
           {activeAdminMenu === 'ulasan' && <ModerasiKomentar />}
           {activeAdminMenu === 'feedback' && (
             <FeedbackPengguna

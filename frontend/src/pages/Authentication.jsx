@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './Authentication.css';
 import googleIcon from '../assets/google.svg';
 import eyeIcon from '../assets/Eye.png';
-import { mockUsers } from '../data/mockData';
+import { login, register } from '../services/api';
 
 export function Authentication({ defaultMode = 'login', onBackToHome, onLogin }) {
   const [mode, setMode] = useState(defaultMode);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -25,32 +27,18 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (mode === 'register' && formData.password !== formData.confirmPassword) {
-      return alert('Konfirmasi kata sandi tidak cocok!');
-    }
-    if (mode === 'register') {
-      const newUser = {
-        name: formData.fullName || formData.email.split('@')[0],
-        email: formData.email,
-        role: formData.email.toLowerCase().includes('admin') ? 'admin' : 'member',
-      };
-      if (onLogin) onLogin(newUser);
-      return;
-    }
-    const found = mockUsers.find(
-      (u) => u.email.toLowerCase() === formData.email.toLowerCase() && u.password === formData.password
-    );
-    // Demo fallback: unknown email logs in as member, admin email as admin
-    const user = found
-      ? { name: found.name, email: found.email, role: found.role }
-      : {
-          name: formData.email.split('@')[0],
-          email: formData.email,
-          role: formData.email.toLowerCase().includes('admin') ? 'admin' : 'member',
-        };
-    if (onLogin) onLogin(user);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); setError('');
+    if (mode === 'register' && formData.password !== formData.confirmPassword) return setError('Konfirmasi kata sandi tidak cocok!');
+    if (mode === 'register' && formData.password.length < 8) return setError('Kata sandi minimal 8 karakter.');
+    setLoading(true);
+    try {
+      const user = mode === 'register'
+        ? await register(formData.fullName, formData.email, formData.password)
+        : await login(formData.email, formData.password);
+      if (onLogin) onLogin(user);
+    } catch (err) { setError(err.message || 'Autentikasi gagal.'); }
+    finally { setLoading(false); }
   };
 
   const isRegister = mode === 'register';
@@ -80,6 +68,7 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
       </div>
 
       <form onSubmit={handleSubmit} className="auth-form">
+        {error && <p role="alert" style={{color:'#dc2626', margin:'0 0 12px'}}>{error}</p>}
         {isRegister && (
           <div className="form-group">
             <label htmlFor="fullName">Nama Lengkap</label>
@@ -179,7 +168,7 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
         )}
 
         <button type="submit" className="submit-btn">
-          {isRegister ? 'Daftar Akun Sekarang →' : 'Masuk ke Akun →'}
+          {loading ? 'Memproses...' : isRegister ? 'Daftar Akun Sekarang →' : 'Masuk ke Akun →'}
         </button>
       </form>
 
@@ -192,8 +181,8 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
       </button>
 
       <div className="demo-hint">
-        <strong>Demo:</strong> admin@wartatekno.id / admin123 = Admin
-        <br />budi.santoso@email.com / member123 = Member
+        <strong>Akun pengujian backend:</strong> admin@wartatekno.id / password = Admin
+        <br />budi@wartatekno.id / password = Member
       </div>
     </div>
   );

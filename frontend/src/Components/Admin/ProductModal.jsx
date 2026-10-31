@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import './ProductModal.css';
 
-const categoryOptions = ['Smartphone', 'Laptop', 'Audio', 'Smartwatch', 'Tablet', 'Aksesoris'];
 
-export function ProductModal({ onClose, onSave }) {
-  const [form, setForm] = useState({
+export function ProductModal({ onClose, onSave, initialProduct, categories = [] }) {
+  const [form, setForm] = useState(() => initialProduct ? ({ title: initialProduct.title || '', category: initialProduct.category || 'Laptop', sku: initialProduct.sku || '', price: String(initialProduct.price || ''), brand: initialProduct.brand || '', image: initialProduct.image || '', specsSummary: (initialProduct.specs || []).map(s => `${s.label}: ${s.value}`).join('\n') || initialProduct.description || '' }) : ({
     title: 'ASUS ROG Zephyrus G16 (2024)',
     category: 'Laptop',
     sku: 'ASUS-ROG-G16-2024',
@@ -12,7 +11,7 @@ export function ProductModal({ onClose, onSave }) {
     brand: 'ASUS',
     image: '',
     specsSummary: 'Intel Core Ultra 9 185H, RTX 4070 8GB GDDR6, 32GB LPDDR5X, 1TB SSD NVMe, Layar 16-inch ROG Nebula OLED 2.5K 240Hz',
-  });
+  }));
   const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
 
@@ -31,7 +30,7 @@ export function ProductModal({ onClose, onSave }) {
     setError('');
     const url = URL.createObjectURL(file);
     setPreview(url);
-    setForm((prev) => ({ ...prev, image: url }));
+    setError('Backend saat ini menerima URL gambar, belum menyediakan endpoint upload file. Tempel URL gambar pada kolom di bawah.');
   };
 
   const handleSubmit = (e) => {
@@ -47,6 +46,7 @@ export function ProductModal({ onClose, onSave }) {
     }
     if (onSave) {
       onSave({
+        databaseId: initialProduct?.databaseId,
         title: form.title.trim(),
         brand: form.brand.trim(),
         category: form.category,
@@ -54,8 +54,8 @@ export function ProductModal({ onClose, onSave }) {
         price: priceNum,
         rating: 5.0,
         reviewsCount: 0,
-        status: 'Draf',
-        image: form.image || 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500',
+        status: initialProduct?.status || 'Draf',
+        image: form.image && !form.image.startsWith('blob:') ? form.image : '',
         description: form.specsSummary.trim(),
         specs: form.specsSummary.trim()
           ? [{ label: 'Ringkasan', value: form.specsSummary.trim() }]
@@ -69,7 +69,7 @@ export function ProductModal({ onClose, onSave }) {
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <div>
-            <h2>Tambah Produk Baru</h2>
+            <h2>{initialProduct ? 'Edit Produk' : 'Tambah Produk Baru'}</h2>
             <p>Lengkapi detail informasi produk elektronik untuk katalog WartaTekno</p>
           </div>
           <button type="button" className="modal-close" onClick={onClose}>✕</button>
@@ -85,7 +85,7 @@ export function ProductModal({ onClose, onSave }) {
             <div className="modal-group">
               <label>KATEGORI PRODUK <span className="req">*</span></label>
               <select name="category" value={form.category} onChange={handleChange}>
-                {categoryOptions.map((c) => (
+                {categories.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>

@@ -5,7 +5,7 @@ import komentarIcon from '../../assets/komentar.png';
 import moderasiIcon from '../../assets/Moderasi.png';
 import reviewIcon from '../../assets/Review.png';
 import filterIcon from '../../assets/Filter.png';
-import { initialComments, initialProducts } from '../../data/mockData';
+import { getAdminComments, updateCommentStatus, removeComment } from '../../services/api';
 
 function SummaryCard({ title, value, label, icon, sub, subClass }) {
   return (
@@ -23,13 +23,12 @@ function SummaryCard({ title, value, label, icon, sub, subClass }) {
   );
 }
 
-function getProductTitle(productId) {
-  const product = initialProducts.find((p) => p.id === productId);
-  return product ? product.title : 'Produk Dihapus';
-}
-
 export function ModerasiKomentar() {
-  const [comments, setComments] = useState(initialComments);
+  const [comments, setComments] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [error, setError] = useState('');
+  const refresh = () => getAdminComments().then(r => { setComments(r.comments); setSummary(r.summary); }).catch(err => setError(err.message));
+  React.useEffect(() => { refresh(); }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
 
@@ -70,27 +69,19 @@ export function ModerasiKomentar() {
   const startItem = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const endItem = Math.min(indexOfLastItem, totalItems);
 
-  const handleApprove = (id) => {
-    setComments(
-      comments.map((c) => (c.id === id ? { ...c, status: 'Disetujui' } : c))
-    );
-  };
+  const handleApprove = (id) => updateCommentStatus(id, 'Disetujui').then(refresh).catch(err => alert(err.message));
 
-  const handleSpam = (id) => {
-    setComments(
-      comments.map((c) => (c.id === id ? { ...c, status: 'Spam' } : c))
-    );
-  };
+  const handleSpam = (id) => updateCommentStatus(id, 'Spam').then(refresh).catch(err => alert(err.message));
 
   const handleDelete = (id) => {
     if (window.confirm('Yakin ingin menghapus ulasan ini?')) {
-      setComments(comments.filter((c) => c.id !== id));
+      removeComment(id).then(refresh).catch(err => alert(err.message));
     }
   };
 
-  const totalComments = comments.length;
-  const pendingCount = comments.filter((c) => c.status === 'Menunggu').length;
-  const approvedCount = comments.filter((c) => c.status === 'Disetujui').length;
+  const totalComments = Number(summary.total ?? comments.length);
+  const pendingCount = Number(summary.pending ?? comments.filter((c) => c.status === 'Menunggu').length);
+  const approvedCount = Number(summary.approved ?? comments.filter((c) => c.status === 'Disetujui').length);
   const approvedPct = totalComments === 0 ? '0%' : `${Math.round((approvedCount / totalComments) * 1000) / 10}%`;
 
   const summaryCards = [
@@ -149,6 +140,7 @@ export function ModerasiKomentar() {
         ))}
       </div>
 
+      {error && <p role="alert" style={{color:'#b91c1c'}}>{error}</p>}
       <div className="filter-bar">
         <div className="search-box">
           <input
@@ -208,7 +200,7 @@ export function ModerasiKomentar() {
                   </td>
 
                   <td>
-                    <span className="product-text">{getProductTitle(c.productId)}</span>
+                    <span className="product-text">{c.product?.title || c.productId || 'Produk'}</span>
                   </td>
 
                   <td>

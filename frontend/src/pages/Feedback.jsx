@@ -12,17 +12,20 @@ export function Feedback({ onSubmit, onBackToHome }) {
     message: '',
   });
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault(); setError('');
     if (!formData.userName.trim() || !formData.email.trim() || !formData.title.trim() || !formData.message.trim()) return;
-    if (onSubmit) {
-      onSubmit({
+    setLoading(true);
+    try { if (onSubmit) {
+      await onSubmit({
         userName: formData.userName.trim(),
         email: formData.email.trim(),
         category: formData.category,
@@ -32,6 +35,7 @@ export function Feedback({ onSubmit, onBackToHome }) {
     }
     setSuccess(true);
     setFormData({ userName: '', email: '', category: feedbackCategories[0], title: '', message: '' });
+    } catch (err) { setError(err.message || 'Masukan gagal dikirim.'); } finally { setLoading(false); }
   };
 
   return (
@@ -58,6 +62,7 @@ export function Feedback({ onSubmit, onBackToHome }) {
         </div>
       )}
 
+      {error && <p role="alert" style={{color:'#b91c1c'}}>{error}</p>}
       <form onSubmit={handleSubmit} className="feedback-form">
         <div className="form-row">
           <div className="form-group">
@@ -132,7 +137,7 @@ export function Feedback({ onSubmit, onBackToHome }) {
         </div>
 
         <button type="submit" className="feedback-submit">
-          Kirim Masukan →
+          {loading ? 'Mengirim...' : 'Kirim Masukan →'}
         </button>
       </form>
     </div>
