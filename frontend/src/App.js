@@ -222,7 +222,7 @@ function App() {
         )
       )}
 
-      {activePage === 'kontak' && (
+      {activePage === 'Beri Masukan' && (
         <Feedback
           onSubmit={handleAddFeedback}
           onBackToHome={() => setActivePage('home')}

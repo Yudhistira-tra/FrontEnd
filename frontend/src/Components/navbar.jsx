@@ -42,7 +42,7 @@ export function Navbar({ onNavigate, currentUser, onLogout, isAdminView, savedCo
                 <div className="logo" onClick={() => onNavigate('home')} style={{cursor: 'pointer'}}>Warta<span>Tekno</span></div>
                     <div className="navbar-links">
                         <a href="#Beranda" onClick={(e) => { e.preventDefault(); onNavigate('home'); }}>Beranda</a>
-                        <a href="#Kontak" onClick={(e) => { e.preventDefault(); onNavigate('kontak'); }}>Kontak</a>
+                        <a href="#Kontak" onClick={(e) => { e.preventDefault(); onNavigate('kontak'); }}>Beri Masukan</a>
                         {currentUser && (
                             <a href="#Tersimpan" onClick={(e) => { e.preventDefault(); onNavigate('tersimpan'); }}>
                               Koleksi Tersimpan{savedCount > 0 ? ` (${savedCount})` : ''}
