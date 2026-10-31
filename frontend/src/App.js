@@ -209,7 +209,16 @@ function App() {
           activeMenu={activeAdminMenu}
           onMenuSelect={setActiveAdminMenu}
         >
-          {activeAdminMenu === 'produk' && <KelolaProduk products={products} categories={categories} onAddProduct={handleAddProduct} onUpdateProduct={handleUpdateProduct} onDeleteProduct={handleDeleteProduct} />}
+          {activeAdminMenu === 'produk' && (
+            <KelolaProduk
+              products={products}
+              categories={categories}
+              onAddProduct={handleAddProduct}
+              onUpdateProduct={handleUpdateProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onOpenDetail={handleOpenDetail}
+            />
+          )}
           {activeAdminMenu === 'ulasan' && <ModerasiKomentar />}
           {activeAdminMenu === 'feedback' && (
             <FeedbackPengguna
@@ -228,7 +237,7 @@ function App() {
         )
       )}
 
-      {activePage === 'Beri Masukan' && (
+      {activePage === 'kontak' && (
         <Feedback
           onSubmit={handleAddFeedback}
           onBackToHome={() => setActivePage('home')}
@@ -255,7 +264,7 @@ function App() {
         <span className="footer-desc">Portal ulasan dan spesifikasi gadget terpercaya.</span>
         <nav className="footer-links">
           <button type="button" onClick={() => setActivePage('home')}>Beranda</button>
-          <button type="button" onClick={() => setActivePage('kontak')}>Kontak</button>
+          <button type="button" onClick={() => setActivePage('kontak')}>Beri Masukan</button>
           <button type="button" onClick={() => setActivePage('tentang')}>Tentang Kami</button>
           {currentUser?.role === 'admin' && (
             <button type="button" onClick={() => { setActivePage('admin'); setActiveAdminMenu('feedback'); }}>Kelola</button>

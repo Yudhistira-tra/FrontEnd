@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Authentication.css';
-import googleIcon from '../assets/google.svg';
 import eyeIcon from '../assets/Eye.png';
 import { login, register } from '../services/api';
 
@@ -171,14 +170,6 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
           {loading ? 'Memproses...' : isRegister ? 'Daftar Akun Sekarang →' : 'Masuk ke Akun →'}
         </button>
       </form>
-
-      <div className="divider">
-        <span>atau</span>
-      </div>
-      <button type="button" className="google-btn">
-        <img src={googleIcon} alt="google"/>
-        Lanjutkan dengan Google
-      </button>
 
       <div className="demo-hint">
         <strong>Akun pengujian backend:</strong> admin@wartatekno.id / password = Admin

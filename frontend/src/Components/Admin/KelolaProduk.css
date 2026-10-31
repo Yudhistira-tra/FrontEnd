@@ -203,9 +203,12 @@
   vertical-align: middle;
 }
 
-.col-product {
+.cell-inner {
   display: flex;
   align-items: center;
+}
+
+.col-product .cell-inner {
   gap: 12px;
 }
 
@@ -249,9 +252,18 @@
   background-color: #fef9c3;
   color: #a16207;
 }
-.col-actions {
-  display: flex;
+.col-status .cell-inner {
+  gap: 8px;
+}
+
+.col-actions .cell-inner {
   gap: 20px;
+}
+
+/* ModerasiKomentar.css sets .col-actions to display:flex, which breaks this
+   table-cell layout; flex belongs on the inner wrapper, not the td. */
+.kelola-produk-container .col-actions {
+  display: table-cell;
 }
 
 .btn-action {
@@ -265,6 +277,10 @@
 
 .link-detail { color: #2563eb; }
 .link-edit { color: #475569; }
+.link-activate {
+  color: #15803d;
+  text-decoration: underline;
+}
 .link-delete { color: #ef4444; }
 
 .btn-action:hover {

@@ -25,7 +25,7 @@ function SummaryCard({ title, value, label, icon, sub, subClass }) {
   );
 }
 
-export function KelolaProduk({ products: productsProp, categories = [], onAddProduct, onUpdateProduct, onDeleteProduct }) {
+export function KelolaProduk({ products: productsProp, categories = [], onAddProduct, onUpdateProduct, onDeleteProduct, onOpenDetail }) {
 
   const product = productsProp || [];
   const [showModal, setShowModal] = useState(false);
@@ -85,6 +85,8 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
   const handleDelete = (id) => { if (window.confirm('Yakin ingin menghapus produk ini?')) onDeleteProduct && onDeleteProduct(id); };
 
   const handleSaveProduct = async (newProduct) => { try { if (editingProduct) await onUpdateProduct(newProduct); else if (onAddProduct) await onAddProduct(newProduct); setShowModal(false); setEditingProduct(null); setCurrentPage(1); } catch (err) { alert(err.message); } };
+
+  const handleActivate = async (item) => { try { await onUpdateProduct({ ...item, status: 'Aktif' }); } catch (err) { alert(err.message); } };
 
   const totalProducts = product.length;
 
@@ -224,10 +226,12 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
               currentProducts.map((p) => (
                 <tr key={p.id}>
                   <td className="col-product">
-                    <img src={p.image} alt={p.title} className="thumb-img" />
-                    <div className="product-info">
-                      <strong>{p.title}</strong>
-                      <span className="sku-text">SKU: {p.sku || 'N/A'}</span>
+                    <div className="cell-inner">
+                      <img src={p.image} alt={p.title} className="thumb-img" />
+                      <div className="product-info">
+                        <strong>{p.title}</strong>
+                        <span className="sku-text">SKU: {p.sku || 'N/A'}</span>
+                      </div>
                     </div>
                   </td>
 
@@ -250,35 +254,47 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
                     </div>
                   </td>
 
-                  <td>
-                    <span
-                      className={`status-pill ${
-                        p.status === 'Draf' ? 'status-draf' : 'status-aktif'
-                      }`}
-                    >
-                      • {p.status || 'Aktif'}
-                    </span>
+                  <td className="col-status">
+                    <div className="cell-inner">
+                      <span
+                        className={`status-pill ${
+                          p.status === 'Draf' ? 'status-draf' : 'status-aktif'
+                        }`}
+                      >
+                        • {p.status || 'Aktif'}
+                      </span>
+                      {p.status === 'Draf' && (
+                        <button
+                          className="btn-action link-activate"
+                          onClick={() => handleActivate(p)}
+                        >
+                          Aktifkan
+                        </button>
+                      )}
+                    </div>
                   </td>
 
                   <td className="col-actions">
-                    <button
-                      className="btn-action link-detail"
-                      onClick={() => console.log('Detail', p.id)}
-                    >
-                      Detail
-                    </button>
-                    <button
-                      className="btn-action link-edit"
-                      onClick={() => { setEditingProduct(p); setShowModal(true); }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn-action link-delete"
-                      onClick={() => handleDelete(p.databaseId)}
-                    >
-                      Hapus
-                    </button>
+                    <div className="cell-inner">
+                      <button
+                        className="btn-action link-detail"
+                        onClick={() => onOpenDetail && onOpenDetail(p.id)}
+                      >
+                        Detail
+                      </button>
+                      <button
+                        className="btn-action link-edit"
+                        onClick={() => { setEditingProduct(p); setShowModal(true); }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn-action link-delete"
+                        onClick={() => handleDelete(p.databaseId)}
+                      >
+                        Hapus
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

@@ -18,9 +18,12 @@ const unwrap = (p) => Array.isArray(p) ? p : (p?.data && Array.isArray(p.data) ?
 const statusProduct = (v) => ({ active: 'Aktif', draft: 'Draf', archived: 'Arsip' }[v] || v || 'Aktif');
 const statusComment = (v) => ({ pending: 'Menunggu', approved: 'Disetujui', flagged: 'Spam' }[v] || v);
 const statusFeedback = (v) => ({ new: 'Belum Ditanggapi', read: 'Sedang Ditinjau Tim Teknis', resolved: 'Selesai' }[v] || v);
+// specs_json arrives as a {label: value} map from seeded rows but as a
+// [{label, value}] array from rows the modal writes; consumers expect the array.
+const normalizeSpecs = (s) => (Array.isArray(s) ? s : s && typeof s === 'object' ? Object.entries(s).map(([label, value]) => ({ label, value })) : []);
 export function mapProduct(p) {
   if (!p) return p;
-  return { ...p, id: String(p.slug || p.id), databaseId: p.id, category: p.category?.name || p.category || '', image: p.image_url || p.image || p.images?.[0]?.url || '', images: (p.images || []).map(x => x.url || x), rating: Number(p.rating_avg ?? p.rating ?? 0), reviewsCount: Number(p.reviews_count ?? p.reviewsCount ?? 0), status: statusProduct(p.status), specs: p.specs_json || p.specs || [] };
+  return { ...p, id: String(p.slug || p.id), databaseId: p.id, category: p.category?.name || p.category || '', image: p.image_url || p.image || p.images?.[0]?.url || '', images: (p.images || []).map(x => x.url || x), rating: Number(p.rating_avg ?? p.rating ?? 0), reviewsCount: Number(p.reviews_count ?? p.reviewsCount ?? 0), status: statusProduct(p.status), specs: normalizeSpecs(p.specs_json ?? p.specs) };
 }
 export function mapComment(c) {
   return { ...c, id: String(c.id), productId: String(c.product?.slug || c.product_id), userName: c.user_name || c.userName || 'Pengguna', userRole: c.is_staff ? 'Admin' : 'Member', comment: c.comment_text || c.comment || '', createdAt: c.created_at || c.createdAt, likes: Number(c.upvotes_count ?? c.likes ?? 0), likedByMe: Boolean(c.liked_by_me), status: statusComment(c.status), reply: c.replies?.[0] ? mapComment(c.replies[0]) : c.reply };

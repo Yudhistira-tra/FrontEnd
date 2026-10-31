@@ -2,6 +2,21 @@ import React, { useState } from 'react';
 import './ProductModal.css';
 
 
+// specsSummary is prefilled as "Label: value" per line, so split each line back
+// into a pair — otherwise saving an edit collapses every spec into one entry.
+function parseSpecs(text) {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const colon = line.indexOf(':');
+      return colon > 0
+        ? { label: line.slice(0, colon).trim(), value: line.slice(colon + 1).trim() }
+        : { label: 'Ringkasan', value: line };
+    });
+}
+
 export function ProductModal({ onClose, onSave, initialProduct, categories = [] }) {
   const [form, setForm] = useState(() => initialProduct ? ({ title: initialProduct.title || '', category: initialProduct.category || 'Laptop', sku: initialProduct.sku || '', price: String(initialProduct.price || ''), brand: initialProduct.brand || '', image: initialProduct.image || '', specsSummary: (initialProduct.specs || []).map(s => `${s.label}: ${s.value}`).join('\n') || initialProduct.description || '' }) : ({
     title: 'ASUS ROG Zephyrus G16 (2024)',
@@ -57,9 +72,7 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
         status: initialProduct?.status || 'Draf',
         image: form.image && !form.image.startsWith('blob:') ? form.image : '',
         description: form.specsSummary.trim(),
-        specs: form.specsSummary.trim()
-          ? [{ label: 'Ringkasan', value: form.specsSummary.trim() }]
-          : [],
+        specs: parseSpecs(form.specsSummary.trim()),
       });
     }
   };
@@ -86,7 +99,7 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
               <label>KATEGORI PRODUK <span className="req">*</span></label>
               <select name="category" value={form.category} onChange={handleChange}>
                 {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c.id || c.slug} value={c.name}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -141,7 +154,7 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
 
           <div className="modal-foot">
             <button type="button" className="btn-cancel" onClick={onClose}>Batal</button>
-            <button type="submit" className="btn-save">✓ Simpan Produk</button>
+            <button type="submit" className="btn-save">✓ {initialProduct ? 'Simpan Perubahan' : 'Simpan Produk'}</button>
           </div>
         </form>
       </div>
