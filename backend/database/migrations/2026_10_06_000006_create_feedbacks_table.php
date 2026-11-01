@@ -23,7 +23,9 @@ return new class extends Migration
             $table->index(['status', 'category']);
         });
 
-        DB::statement('ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_rating_check CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_rating_check CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)');
+        }
     }
 
     public function down(): void

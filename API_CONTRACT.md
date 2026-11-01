@@ -15,9 +15,10 @@
   `"laptop-thinkpad-x1-carbon-gen-11-2024"` or numeric ids — never parsed,
   only compared).
 - Timestamps: backend returns **ISO 8601** (`2026-10-08T14:02:00+07:00`).
-  The frontend formats "2 jam lalu" itself. Never store/return relative strings.
-- List endpoints return Laravel paginator envelopes `{ data: [...], links, meta }`
-  — the frontend service layer unwraps `.data`.
+  The frontend formats dates for display. Never store/return relative strings.
+- Paginated list endpoints return Laravel paginator envelopes
+  `{ data: [...], links, meta }` — the frontend service layer unwraps `.data`.
+  Category lists return `{ data: [...] }`.
 - **Field naming: backend is `snake_case`, frontend is `camelCase`.**
   The service layer maps both directions. Key pairs:
 
@@ -48,9 +49,7 @@
 | Admin Redaksi | admin@wartatekno.id | password | `admin` |
 | Budi Santoso | budi@wartatekno.id | password | `member` |
 
-> Frontend mock creds differ (`admin123`/`member123`, `budi.santoso@email.com`).
-> When the frontend switches to the real backend, its login demo-hint must be
-> updated to the seed accounts above.
+> The login demo hint uses these same seeded credentials.
 
 ## 2. Enums (exact strings, case-sensitive)
 
@@ -85,14 +84,19 @@ Role rule: `email` containing `admin` is **frontend demo logic only** — the re
 backend assigns `member` by default; admins are promoted/seeded server-side.
 
 **POST /auth/login** (public) — same shape as register response, `→ 200`.
-**GET /me** (auth) — `{ "user": { "name": "...", "email": "...", "role": "member" } }`.
+**GET /auth/me** (auth) — `{ "user": { "name": "...", "email": "...", "role": "member" } }`.
 
 ### Products
 
-**GET /products** (public) → `200 [{ product }]`
+**GET /products** (public) → `200` Laravel paginator, with products in `data`.
+Products with no approved ratings have `rating_avg: null` and `reviews_count: 0`.
+**GET /admin/products** (admin) returns all product statuses and uses the same
+paginated shape. Search uses portable case-insensitive matching in SQLite and PostgreSQL.
 **POST /products** (admin) — body: all fields below except `id`, `rating`,
-`reviewsCount` (server defaults `rating: 5.0`, `reviewsCount: 0`) → `201 { product }`
-**DELETE /products/:id** (admin) → `204`
+`reviewsCount`. Provide `image_url` for a remote image, or send an `image` file
+in `multipart/form-data` (PNG/JPG/WebP, max 5 MB). Uploaded files are stored on
+the public disk. `PUT /products/:id` accepts the same fields and upload format.
+**DELETE /products/:id** (admin) → `200` with a message.
 
 ```json
 // product
@@ -114,12 +118,12 @@ backend assigns `member` by default; admins are promoted/seeded server-side.
 
 ### Comments (per product)
 
-**GET /products/:id/comments** (public) — approved + pending only, **never Spam**
-→ `200 [{ comment }]`. Admin moderation list may include Spam via `GET /comments?status=Spam` (admin).
+**GET /products/:id/comments** (public) — approved top-level comments and their
+approved nested replies, **never pending or Spam** → `200` Laravel paginator.
+Admin moderation list (`GET /admin/comments`) includes all statuses.
 
 **POST /products/:id/comments** (public on backend — guests send `user_name` +
-`user_email`; logged-in users are identified by token. **Frontend stays
-stricter**: its form is members-only and always sends the token.)
+`user_email`; logged-in users are identified by token. Frontend requires login.)
 ```json
 // request (member)
 { "rating": 5, "comment_text": "Keyboard-nya enak…" }
@@ -127,36 +131,28 @@ stricter**: its form is members-only and always sends the token.)
 { "user_name": "Tamu", "user_email": "tamu@mail.com", "rating": 5, "comment_text": "…" }
 // → 201
 {
-  "message": "Komentar berhasil dikirim.",
+  "message": "Komentar berhasil dikirim dan menunggu persetujuan admin.",
   "data": {
     "id": 12, "product_id": 3,
     "user_name": "Budi Santoso",
     "comment_text": "Keyboard-nya enak…",
     "rating": 5, "created_at": "2026-10-08T14:02:00+07:00",
-    "status": "approved", "upvotes_count": 0
+    "status": "pending", "upvotes_count": 0
   }
 }
 ```
-Notes: comments containing links auto-return `status: flagged` (hidden publicly).
-Replies use `parent_id` (one level); the comment list embeds approved `replies`
-and per-user `liked_by_me` flags when authenticated.
+Ordinary comments start as `pending` and only appear publicly after admin approval.
+Comments containing links are `flagged` for review. Admin replies to approved
+comments are published immediately; member replies are pending. Replies use
+`parent_id` and may be nested at any depth. The public comment response embeds
+approved `replies` recursively and includes per-user `liked_by_me` flags when
+authenticated.
 
 **POST /comments/:id/like** (member/admin, toggle)
 → `200 { "liked": true, "upvotes_count": 13 }`
 **PATCH /admin/comments/:id** (admin) — `{ "status": "approved" }` (values:
 `pending | approved | flagged`). Admin list: `GET /admin/comments?status=&search=&product_id=`.
-**DELETE /admin/comments/:id** (admin) → `204`
-
-Staff replies (optional v1): embed as `comment.reply`:
-
-```json
-"reply": {
-  "author": "WartaTekno Staff",
-  "timeAgo": "2026-10-05T…",
-  "text": "Halo Dimas, RAM-nya tersolder permanen…",
-  "helpful": 8
-}
-```
+**DELETE /admin/comments/:id** (admin) → `200` with a message.
 
 ### Feedbacks (Kontak form ↔ admin list)
 
@@ -176,19 +172,20 @@ Staff replies (optional v1): embed as `comment.reply`:
 **GET /admin/feedbacks?category=&status=&search=** (admin — server filters!)
 **PATCH /admin/feedbacks/:id** (admin) — `{ "status": "read" }` (values:
 `new | read | resolved`)
-**DELETE /admin/feedbacks/:id** (admin) → `204`
+**DELETE /admin/feedbacks/:id** (admin) → `200` with a message.
 
 ### Saved / wishlist (per logged-in user)
 
 **GET /me/saved** (member/admin) → `200` (saved products)
 **POST /me/saved/:productId** (member/admin) → `201`
-**DELETE /me/saved/:productId** (member/admin) → `204`
+**DELETE /me/saved/:productId** (member/admin) → `200` with a message.
 
-### Uploads (needed for the "Tambah Produk" file picker)
+### Admin dashboard
 
-**POST /uploads** (admin, `multipart/form-data`, field `file`, ≤5MB, png/jpg/webp)
-→ `201 { "url": "https://…" }`. Until this exists, the frontend sends an image
-URL string in `product.image` — keep that working.
+**GET /admin/dashboard** (admin) includes total products/comments, products and
+comments created this month, and the percentage of comments approved. These
+values drive the admin summary cards; the UI must not substitute placeholder
+growth or verification percentages.
 
 ## 5. Role matrix
 
@@ -211,10 +208,8 @@ URL string in `product.image` — keep that working.
 
 ## 7. Open decisions (backend + owner agree, ~15 min)
 
-1. Images v1: URL strings only, or real upload endpoint now? (Backend has
-   `storage/` + `php artisan storage:link` in SETUP — confirm the upload route.)
-2. Filtering: backend already supports `?search=&category=&status=` on admin
+1. Filtering: backend already supports `?search=&category=&status=` on admin
    lists — decision: switch frontend Filter buttons to server-side, or keep
    client-side for v1?
-3. ~~Port/CORS~~ — resolved: `:8000`, allow `http://localhost:3000`.
-4. ~~Seed~~ — resolved: backend seeds 8 products + 2 demo accounts.
+2. ~~Port/CORS~~ — resolved: `:8000`, allow `http://localhost:3000`.
+3. ~~Seed~~ — resolved: backend seeds 8 products + 2 demo accounts.

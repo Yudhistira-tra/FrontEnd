@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('comment_text');
             $table->unsignedTinyInteger('rating')->nullable();      // 1-5 (hanya komentar utama)
             $table->unsignedInteger('upvotes_count')->default(0);
-            $table->string('status', 20)->default('approved');      // pending | approved | flagged
+            $table->string('status', 20)->default('pending');       // pending | approved | flagged
             $table->boolean('is_staff')->default(false);            // badge "WartaTekno Staff"
             $table->timestamps();
 
@@ -27,7 +27,9 @@ return new class extends Migration
             $table->index('parent_id');
         });
 
-        DB::statement('ALTER TABLE product_comments ADD CONSTRAINT product_comments_rating_check CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE product_comments ADD CONSTRAINT product_comments_rating_check CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)');
+        }
     }
 
     public function down(): void

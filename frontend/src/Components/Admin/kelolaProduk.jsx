@@ -25,7 +25,7 @@ function SummaryCard({ title, value, label, icon, sub, subClass }) {
   );
 }
 
-export function KelolaProduk({ products: productsProp, categories = [], onAddProduct, onUpdateProduct, onDeleteProduct, onOpenDetail }) {
+export function KelolaProduk({ products: productsProp, categories = [], stats = {}, onAddProduct, onUpdateProduct, onDeleteProduct, onOpenDetail }) {
 
   const product = productsProp || [];
   const [showModal, setShowModal] = useState(false);
@@ -88,16 +88,18 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
 
   const handleActivate = async (item) => { try { await onUpdateProduct({ ...item, status: 'Aktif' }); } catch (err) { alert(err.message); } };
 
-  const totalProducts = product.length;
+  const totalProducts = Number(stats.total_products ?? product.length);
 
-  const totalReviews = product.reduce(
+  const totalReviews = Number(stats.total_comments ?? product.reduce(
     (acc, prod) => acc + (prod.reviewsCount || 0),
     0
-  );
+  ));
+  const approvedCommentPercentage = Number(stats.approved_comment_percentage ?? 0);
+  const productsThisMonth = Number(stats.products_this_month ?? 0);
 
-  const pendingModeration = product.filter(
+  const pendingModeration = Number(stats.draft_products ?? product.filter(
     (prod) => prod.status && prod.status.toLowerCase() === 'draf'
-  ).length;
+  ).length);
 
   const summaryCards = [
     {
@@ -106,7 +108,7 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
       value: totalProducts.toLocaleString('id-ID'),
       label: 'Produk',
       icon: <img src={produkIcon} alt="Produk" />,
-      sub: `↗ +${totalProducts} bulan ini`,
+      sub: `↗ +${productsThisMonth} bulan ini`,
       subClass: 'sub-green',
     },
     {
@@ -115,7 +117,7 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
       value: totalReviews.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={reviewIcon} alt="Review" />,
-      sub: '● 98% Terverifikasi',
+      sub: `● ${approvedCommentPercentage}% Disetujui`,
       subClass: 'sub-blue',
     },
     {
@@ -247,7 +249,9 @@ export function KelolaProduk({ products: productsProp, categories = [], onAddPro
 
                   <td>
                     <div className="rating-box">
-                      <span className="star">★</span> {p.rating || 5.0}
+                      {p.reviewsCount > 0 && p.rating != null
+                        ? <><span className="star">★</span> {Number(p.rating).toFixed(1)}</>
+                        : <span>Belum ada rating</span>}
                       <span className="review-count">
                         ({p.reviewsCount || 0} ulasan)
                       </span>

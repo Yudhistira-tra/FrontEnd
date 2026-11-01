@@ -10,7 +10,7 @@ import { Feedback } from './pages/Feedback.jsx';
 import { KoleksiTersimpan } from './pages/KoleksiTersimpan.jsx';
 import { About } from './pages/About.jsx';
 import warningIcon from './assets/Icon-4.png';
-import { getProducts, getMe, getSaved, saveProduct, unsaveProduct, logout, postFeedback, getToken, createProduct, updateProduct, deleteProduct, getAdminFeedbacks, updateFeedbackStatus, removeFeedback, getAdminProducts, getCategories } from './services/api';
+import { getProducts, getMe, getSaved, saveProduct, unsaveProduct, logout, postFeedback, getToken, createProduct, updateProduct, deleteProduct, getAdminFeedbacks, updateFeedbackStatus, removeFeedback, getAdminProducts, getAdminDashboard, getCategories } from './services/api';
 import { KelolaProduk } from './Components/Admin/kelolaProduk.jsx'
 import { ModerasiKomentar } from './Components/Admin/moderasiKomentar.jsx'
 import { FeedbackPengguna } from './Components/Admin/feedbackPengguna.jsx'
@@ -25,7 +25,10 @@ function App() {
   const [activeAdminMenu, setActiveAdminMenu] = useState('produk');
   const [feedbacks, setFeedbacks] = useState([]);
   const [products, setProducts] = useState([]);
+  const [adminProducts, setAdminProducts] = useState([]);
+  const [adminStats, setAdminStats] = useState({});
   const [dataError, setDataError] = useState('');
+  const [adminError, setAdminError] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [currentUser, setCurrentUser] = useState(null); // null = guest, {name,email,role}
   const [savedIds, setSavedIds] = useState([]);
@@ -33,8 +36,15 @@ function App() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    if (activePage === 'admin' && activeAdminMenu === 'produk' && currentUser?.role === 'admin') getAdminProducts().then(setProducts).catch(err => setDataError(err.message));
-    if (activePage === 'admin' && activeAdminMenu === 'feedback' && currentUser?.role === 'admin') getAdminFeedbacks().then(r => setFeedbacks(r.feedbacks)).catch(err => setDataError(err.message));
+    if (activePage === 'admin' && activeAdminMenu === 'produk' && currentUser?.role === 'admin') {
+      setAdminError('');
+      getAdminProducts().then(setAdminProducts).catch(err => setAdminError(err.message));
+      getAdminDashboard().then(setAdminStats).catch(err => setAdminError(err.message));
+    }
+    if (activePage === 'admin' && activeAdminMenu === 'feedback' && currentUser?.role === 'admin') {
+      setAdminError('');
+      getAdminFeedbacks().then(r => setFeedbacks(r.feedbacks)).catch(err => setAdminError(err.message));
+    }
   }, [activePage, activeAdminMenu, currentUser]);
 
   useEffect(() => {
@@ -83,15 +93,37 @@ function App() {
     }
   };
 
-  const handleLogout = async () => { try { await logout(); } catch (_) {} setCurrentUser(null); setSavedIds([]); setSavedProductItems([]); setActivePage('home'); };
+  const refreshAdminStats = () => getAdminDashboard().then(setAdminStats).catch(err => setAdminError(err.message));
 
-  const handleAddProduct = async (newProduct) => { const saved = await createProduct(newProduct); setProducts(prev => [saved, ...prev]); };
+  const handleLogout = async () => { try { await logout(); } catch (_) {} setCurrentUser(null); setSavedIds([]); setSavedProductItems([]); setAdminProducts([]); setActivePage('home'); };
 
-  const handleUpdateProduct = async (product) => { const updated = await updateProduct(product); setProducts(prev => prev.map(p => p.databaseId === updated.databaseId ? updated : p)); };
+  const handleAddProduct = async (newProduct) => {
+    const saved = await createProduct(newProduct);
+    setAdminProducts(prev => [saved, ...prev]);
+    if (saved.status === 'Aktif') setProducts(prev => [saved, ...prev]);
+    refreshAdminStats();
+  };
+
+  const handleUpdateProduct = async (product) => {
+    const updated = await updateProduct(product);
+    setAdminProducts(prev => prev.map(p => p.databaseId === updated.databaseId ? updated : p));
+    setProducts(prev => updated.status === 'Aktif'
+      ? prev.some(p => p.databaseId === updated.databaseId)
+        ? prev.map(p => p.databaseId === updated.databaseId ? updated : p)
+        : [updated, ...prev]
+      : prev.filter(p => p.databaseId !== updated.databaseId));
+    refreshAdminStats();
+  };
 
   const handleDeleteProduct = (id) => {
     if (window.confirm('Yakin ingin menghapus produk ini?')) {
-      deleteProduct(id).then(() => setProducts((prev) => prev.filter((p) => String(p.databaseId) !== String(id)))).catch(err => alert(err.message));
+      deleteProduct(id)
+        .then(() => {
+          setAdminProducts(prev => prev.filter(p => String(p.databaseId) !== String(id)));
+          setProducts(prev => prev.filter(p => String(p.databaseId) !== String(id)));
+          refreshAdminStats();
+        })
+        .catch(err => alert(err.message));
     }
   };
 
@@ -147,6 +179,7 @@ function App() {
                 category={product.category}
                 price={product.price}
                 rating={product.rating}
+                reviewsCount={product.reviewsCount}
                 onClickDetail={handleOpenDetail}
                 isSaved={savedIds.includes(product.id)}
                 onToggleSave={handleToggleSave}
@@ -209,9 +242,11 @@ function App() {
           activeMenu={activeAdminMenu}
           onMenuSelect={setActiveAdminMenu}
         >
+          {adminError && <p role="alert" style={{ padding: '16px', color: '#b91c1c' }}>Gagal memuat data admin: {adminError}</p>}
           {activeAdminMenu === 'produk' && (
             <KelolaProduk
-              products={products}
+              products={adminProducts}
+              stats={adminStats}
               categories={categories}
               onAddProduct={handleAddProduct}
               onUpdateProduct={handleUpdateProduct}

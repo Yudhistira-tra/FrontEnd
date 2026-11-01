@@ -18,9 +18,9 @@ class ProductController extends Controller
         $query = Product::with('category:id,name,slug')->rated()->latest('id');
 
         if ($s = trim((string) $request->query('search', ''))) {
-            $query->where(fn ($w) => $w->where('title', 'ilike', "%{$s}%")
-                ->orWhere('sku', 'ilike', "%{$s}%")
-                ->orWhere('brand', 'ilike', "%{$s}%"));
+            $query->where(fn ($w) => $w->whereLike('title', "%{$s}%")
+                ->orWhereLike('sku', "%{$s}%")
+                ->orWhereLike('brand', "%{$s}%"));
         }
         if ($c = $request->query('category')) {
             $query->where('category_id', $c);
@@ -35,6 +35,7 @@ class ProductController extends Controller
     /** POST /api/v1/products */
     public function store(Request $request)
     {
+        $this->decodeSpecsJson($request);
         $data = $request->validate($this->rules());
 
         $product = DB::transaction(function () use ($request, $data) {
@@ -59,6 +60,7 @@ class ProductController extends Controller
     /** PUT /api/v1/products/{id} */
     public function update(Request $request, Product $product)
     {
+        $this->decodeSpecsJson($request);
         $data = $request->validate($this->rules($product));
 
         DB::transaction(function () use ($request, $data, $product) {
@@ -95,7 +97,7 @@ class ProductController extends Controller
             'sku' => ['nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product?->id)],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'string', 'max:500'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'price' => [$req, 'integer', 'min:0'],
             'release_date' => ['nullable', 'date'],
             'specs_json' => ['nullable', 'array'],
@@ -119,6 +121,19 @@ class ProductController extends Controller
         }
 
         return $slug;
+    }
+
+    private function decodeSpecsJson(Request $request): void
+    {
+        $specs = $request->input('specs_json');
+        if (! is_string($specs)) {
+            return;
+        }
+
+        $decoded = json_decode($specs, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $request->merge(['specs_json' => $decoded]);
+        }
     }
 
     private function syncGallery(Product $product, ?array $urls): void

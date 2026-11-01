@@ -22,22 +22,46 @@ class CommentController extends Controller
         $comments = $p->comments()
             ->whereNull('parent_id')
             ->where('status', 'approved')
-            ->with(['replies' => fn ($q) => $q->where('status', 'approved')->oldest()])
             ->latest()
             ->paginate(min((int) $request->query('per_page', 10), 50));
 
-        $ids = collect($comments->items())
-            ->flatMap(fn ($c) => array_merge([$c->id], $c->replies->pluck('id')->all()))
-            ->all();
+        $nodes = [];
+        $frontier = $comments->getCollection();
 
-        $liked = $user
-            ? CommentLike::where('user_id', $user->id)->whereIn('comment_id', $ids)->pluck('comment_id')->all()
-            : [];
+        foreach ($frontier as $root) {
+            $root->setRelation('replies', collect());
+            $nodes[$root->id] = $root;
+        }
 
-        $comments->getCollection()->each(function ($c) use ($liked) {
-            $c->setAttribute('liked_by_me', in_array($c->id, $liked));
-            $c->replies->each(fn ($r) => $r->setAttribute('liked_by_me', in_array($r->id, $liked)));
-        });
+        while ($frontier->isNotEmpty()) {
+            $children = $p->comments()
+                ->whereIn('parent_id', $frontier->pluck('id'))
+                ->where('status', 'approved')
+                ->oldest()
+                ->get();
+            $nextFrontier = collect();
+
+            foreach ($children as $child) {
+                $child->setRelation('replies', collect());
+                $nodes[$child->id] = $child;
+                $nodes[$child->parent_id]->replies->push($child);
+                $nextFrontier->push($child);
+            }
+
+            $frontier = $nextFrontier;
+        }
+
+        if ($user && $nodes !== []) {
+            $liked = CommentLike::where('user_id', $user->id)
+                ->whereIn('comment_id', array_keys($nodes))
+                ->pluck('comment_id')
+                ->all();
+            $likedSet = array_fill_keys($liked, true);
+
+            foreach ($nodes as $node) {
+                $node->setAttribute('liked_by_me', isset($likedSet[$node->id]));
+            }
+        }
 
         return response()->json($comments);
     }
@@ -53,18 +77,19 @@ class CommentController extends Controller
             'user_email' => [$user ? 'nullable' : 'required', 'email', 'max:190'],
             'comment_text' => ['required', 'string', 'min:3', 'max:2000'],
             'rating' => ['nullable', 'integer', 'between:1,5'],
-            'parent_id' => ['nullable', 'integer', Rule::exists('product_comments', 'id')->where('product_id', $p->id)],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('product_comments', 'id')
+                    ->where('product_id', $p->id)
+                    ->where('status', 'approved'),
+            ],
         ]);
 
-        // Balasan selalu ditempel ke komentar utama (maks 1 level) dan tidak punya rating
-        $parentId = null;
-        if (! empty($data['parent_id'])) {
-            $parent = ProductComment::find($data['parent_id']);
-            $parentId = $parent->parent_id ?? $parent->id;
-        }
+        $parentId = $data['parent_id'] ?? null;
 
-        // Anti-spam sederhana: komentar berisi link otomatis ditandai (tidak tampil publik)
         $hasLink = preg_match('~(https?://|www\.)~i', $data['comment_text']) === 1;
+        $isStaffReply = $user?->isAdmin() && $parentId !== null;
 
         $comment = ProductComment::create([
             'product_id' => $p->id,
@@ -74,14 +99,16 @@ class CommentController extends Controller
             'user_email' => $user?->email ?? $data['user_email'],
             'comment_text' => $data['comment_text'],
             'rating' => $parentId ? null : ($data['rating'] ?? null),
-            'status' => $hasLink ? 'flagged' : 'approved',
+            'status' => $hasLink ? 'flagged' : ($isStaffReply ? 'approved' : 'pending'),
             'is_staff' => (bool) $user?->isAdmin(),
         ]);
 
         return response()->json([
             'message' => $hasLink
-                ? 'Komentar Anda berisi tautan dan sedang menunggu moderasi.'
-                : 'Komentar berhasil dikirim.',
+                ? 'Komentar berisi tautan dan ditandai untuk moderasi.'
+                : ($isStaffReply
+                    ? 'Balasan admin berhasil dipublikasikan.'
+                    : 'Komentar berhasil dikirim dan menunggu persetujuan admin.'),
             'data' => $comment,
         ], 201);
     }

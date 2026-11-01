@@ -82,6 +82,7 @@ export function ModerasiKomentar() {
   const totalComments = Number(summary.total ?? comments.length);
   const pendingCount = Number(summary.pending ?? comments.filter((c) => c.status === 'Menunggu').length);
   const approvedCount = Number(summary.approved ?? comments.filter((c) => c.status === 'Disetujui').length);
+  const commentsThisMonth = Number(summary.this_month ?? 0);
   const approvedPct = totalComments === 0 ? '0%' : `${Math.round((approvedCount / totalComments) * 1000) / 10}%`;
 
   const summaryCards = [
@@ -91,7 +92,7 @@ export function ModerasiKomentar() {
       value: totalComments.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={komentarIcon} alt="Ulasan" />,
-      sub: `↗ +${totalComments} bulan ini`,
+      sub: `↗ +${commentsThisMonth} bulan ini`,
       subClass: 'sub-green',
     },
     {
@@ -100,7 +101,7 @@ export function ModerasiKomentar() {
       value: pendingCount.toLocaleString('id-ID'),
       label: 'Ulasan',
       icon: <img src={moderasiIcon} alt="Moderasi" />,
-      sub: '◷ Perlu ditinjau < 24 jam',
+      sub: 'Perlu keputusan admin',
       subClass: 'sub-red',
     },
     {

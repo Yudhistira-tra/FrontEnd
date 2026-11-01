@@ -9,19 +9,35 @@
 
 Prasyarat: Node 18+, PHP **8.3 atau lebih baru** (sudah diuji di 8.5), Composer.
 
-### 1. Backend
+### 1. Backend (PowerShell terminal pertama)
 
-```bash
-cd backend
-composer install
-cp .env.example .env          # Windows: copy .env.example .env
-php artisan key:generate
+```powershell
+Set-Location .\backend
+if (!(Test-Path vendor)) { composer install }
+if (!(Test-Path .env)) {
+  Copy-Item .env.example .env
+  php artisan key:generate
+}
 php artisan migrate --seed
+php artisan storage:link
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
 `.env.example` sudah mengarah ke SQLite (`DB_CONNECTION=sqlite`), tidak perlu membuat
 database sendiri — `migrate` akan membuat `backend/database/database.sqlite`.
+Biarkan terminal backend tetap terbuka.
+
+Jika `.env` sudah ada dan aplikasi pernah disiapkan, jangan menimpa `.env` atau
+mengulang `key:generate`. Cukup jalankan:
+
+```powershell
+Set-Location .\backend
+php artisan migrate --seed
+```
+
+`migrate --seed` tidak menghapus data. Untuk hanya mengisi ulang akun dan data
+contoh pada database yang migrasinya sudah lengkap, jalankan
+`php artisan db:seed --class=DatabaseSeeder`.
 
 Kalau PHP  8.2 atau lebih lama, `composer install` akan gagal
 (`symfony/*` v8 butuh PHP 8.4+). Di Windows, unduh ZIP "PHP 8.x NTS Windows", extract ke
@@ -42,19 +58,31 @@ extension=gd
 
 lalu jalankan perintah di atas dengan `C:\php-8.5-portable\php.exe artisan ...`.
 
-### 2. Frontend (terminal terpisah)
+### 2. Frontend (PowerShell terminal kedua)
 
-```bash
-cd frontend
-npm install
-npm start
+```powershell
+Set-Location .\frontend
+npm.cmd install
+npm.cmd start
 ```
 
 Buka `http://localhost:3000`. Alamat API bisa diganti lewat `REACT_APP_API_URL` di
 `frontend/.env`; default-nya sudah `http://127.0.0.1:8000/api/v1`.
+Jalankan perintah frontend dari folder `frontend` (bukan root repo), dan biarkan
+terminal ini tetap terbuka. Jika `.env` frontend diubah, hentikan lalu mulai ulang
+frontend agar konfigurasi API dimuat ulang.
 
 > Kalau muncul **"Failed to fetch"**, hampir selalu berarti `php artisan serve` mati —
 > cek terminal backend, jalankan ulang, lalu refresh browser.
+
+### Memeriksa koneksi dan data
+
+Dengan kedua server berjalan, buka `http://127.0.0.1:8000/api/v1/products?per_page=3`.
+Respons harus memiliki `data` berisi produk. Untuk memastikan akun demo tersedia,
+jalankan `php artisan db:seed --class=DatabaseSeeder` dari folder `backend`, lalu
+masuk dengan kredensial di bawah. Jika katalog masih kosong, pastikan terminal
+backend berada di folder `backend` dan `DB_CONNECTION=sqlite` pada `backend/.env`
+mengarah ke database yang sama.
 
 ## Akun demo
 
@@ -63,10 +91,12 @@ Buka `http://localhost:3000`. Alamat API bisa diganti lewat `REACT_APP_API_URL` 
 | `admin@wartatekno.id` | `password` | Admin — membuka panel katalog |
 | `budi@wartatekno.id` | `password` | Member — ulasan, komentar, simpan produk |
 
-Untuk mengembalikan data contoh sebelum demo:
+Untuk menghapus seluruh data dan membangun ulang database dari awal (PERINGATAN:
+semua data lokal akan hilang):
 
-```bash
-cd backend && php artisan migrate:fresh --seed
+```powershell
+Set-Location .\backend
+php artisan migrate:fresh --seed
 ```
 
 ## Fitur
@@ -79,17 +109,7 @@ koleksi tersimpan (wishlist), form masukan/feedback, halaman Tentang Kami.
 Moderasi Komentar (setujui, tandai spam, hapus), Feedback Pengguna (ubah status,
 tandai selesai, hapus).
 
-## Catatan yang diketahui
-
-Diwarisi dari proses integrasi FE-BE, belum dibereskan:
-
-- Kartu statistik admin menampilkan placeholder: "+N bulan ini" hanya mengulang total, dan
-  "98% Terverifikasi" adalah angka tetap.
-- Produk tanpa ulasan menampilkan ★0 di kartu katalog tapi ★5 di kolom rating tabel admin.
-- Balasan admin di halaman detail tampil sebagai kartu kosong (nama field tidak cocok).
-- Status "Menunggu" di moderasi komentar tidak pernah ditulis backend — komentar langsung
-  publish, kecuali berisi tautan (otomatis ditandai Spam).
-- Pencarian lewat API (`?search=`) memakai `ilike` khusus PostgreSQL, jadi mengembalikan
-  500 di SQLite. Aplikasi web tidak terpengaruh karena filter berjalan di sisi klien.
-- Upload gambar produk belum tersedia di backend; modal hanya menerima URL gambar.
-- Balasan komentar hanya 1 level, dan timestamp masih format ISO mentah.
+Statistik admin diambil dari endpoint dashboard, komentar biasa dimoderasi sebelum
+dipublikasikan, dan balasan komentar dapat bertingkat. Upload gambar produk mendukung
+file PNG/JPG/WebP atau URL. Detail endpoint dan aturan payload ada di
+[API_CONTRACT.md](API_CONTRACT.md) dan [INTEGRASI_FRONTEND_BACKEND.md](INTEGRASI_FRONTEND_BACKEND.md).

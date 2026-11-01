@@ -21,8 +21,8 @@ class ProductController extends Controller
             ->where('status', 'active');
 
         if ($s = trim((string) $request->query('search', ''))) {
-            $query->where(fn ($w) => $w->where('title', 'ilike', "%{$s}%")
-                ->orWhere('brand', 'ilike', "%{$s}%"));
+            $query->where(fn ($w) => $w->whereLike('title', "%{$s}%")
+                ->orWhereLike('brand', "%{$s}%"));
         }
 
         if ($c = $request->query('category')) {

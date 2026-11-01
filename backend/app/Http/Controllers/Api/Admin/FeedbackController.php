@@ -21,9 +21,9 @@ class FeedbackController extends Controller
             $query->where('status', $st);
         }
         if ($s = trim((string) $request->query('search', ''))) {
-            $query->where(fn ($w) => $w->where('message', 'ilike', "%{$s}%")
-                ->orWhere('name', 'ilike', "%{$s}%")
-                ->orWhere('email', 'ilike', "%{$s}%"));
+            $query->where(fn ($w) => $w->whereLike('message', "%{$s}%")
+                ->orWhereLike('name', "%{$s}%")
+                ->orWhereLike('email', "%{$s}%"));
         }
 
         $summary = [

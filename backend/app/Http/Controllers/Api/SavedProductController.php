@@ -20,7 +20,7 @@ class SavedProductController extends Controller
             $query->whereHas('product.category', fn ($q) => $q->where('slug', $c));
         }
         if ($s = trim((string) $request->query('search', ''))) {
-            $query->whereHas('product', fn ($q) => $q->where('title', 'ilike', "%{$s}%"));
+            $query->whereHas('product', fn ($q) => $q->whereLike('title', "%{$s}%"));
         }
 
         return response()->json($query->paginate(12));

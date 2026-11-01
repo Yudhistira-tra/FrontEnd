@@ -2,7 +2,7 @@ import React from 'react';
 import './productCard.css';
 import saveIcon from '../assets/Icon (9).png';
 
-export function ProductCard({ id, image, category, title, price, rating, onClickDetail, isSaved, onToggleSave }) {
+export function ProductCard({ id, image, category, title, price, rating, reviewsCount = 0, onClickDetail, isSaved, onToggleSave }) {
   return (
     <div className="product-card">
       <div className="product-image-container">
@@ -10,7 +10,7 @@ export function ProductCard({ id, image, category, title, price, rating, onClick
         <span className="product-badge">{category}</span>
       </div>
       <div className="product-details">
-        <div className="product-rating">★ {rating}</div>
+        <div className="product-rating">{reviewsCount > 0 && rating != null ? `★ ${Number(rating).toFixed(1)}` : 'Belum ada rating'}</div>
         <h3 className="product-title">{title}</h3>
         <div className="price-container">
           <p className="referensi">Harga Referensi</p>

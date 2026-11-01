@@ -8,6 +8,12 @@ function initials(name) {
   return name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
+function updateCommentTree(comments, id, updates) {
+  return comments.map((comment) => String(comment.id) === String(id)
+    ? { ...comment, ...updates }
+    : { ...comment, replies: updateCommentTree(comment.replies || [], id, updates) });
+}
+
 export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBackToGrid, currentUser, onRequireLogin, isSaved, onToggleSave }) {
   const catalog = products || [];
   const [detailProduct, setDetailProduct] = useState(null);
@@ -32,6 +38,8 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
 
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [submissionMessage, setSubmissionMessage] = useState('');
 
   const imagesList = product?.images && product.images.length > 0
     ? product.images
@@ -43,17 +51,21 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
       return;
     }
     likeComment(commentId).then(result => {
-      setComments(prev => prev.map(c => String(c.id) === String(commentId) ? { ...c, likes: result.upvotes_count } : c));
-      setLikedIds(prev => result.liked ? [...prev, commentId] : prev.filter(id => id !== commentId));
+      setComments(prev => updateCommentTree(prev, commentId, { likes: result.upvotes_count }));
+      setLikedIds(prev => result.liked
+        ? [...new Set([...prev, String(commentId)])]
+        : prev.filter(id => String(id) !== String(commentId)));
     }).catch(err => alert(err.message));
   };
 
-  const handleReply = (userName) => {
+  const handleReply = (comment) => {
     if (isGuest) {
       if (onRequireLogin) onRequireLogin();
       return;
     }
-    setNewComment((prev) => (prev ? `${prev} @${userName} ` : `@${userName} `));
+    setReplyTarget(comment);
+    setSubmissionMessage('');
+    setNewComment((prev) => (prev ? `${prev} @${comment.userName} ` : `@${comment.userName} `));
     document.getElementById('review-textarea')?.focus();
   };
 
@@ -61,8 +73,59 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
     e.preventDefault();
     if (isGuest || !newComment.trim()) return;
 
-    try { await postComment(productId, newComment, newRating); const refreshed = await getComments(productId); setComments(refreshed); setNewComment(''); } catch (err) { alert(err.message); }
+    try {
+      const result = await postComment(productId, newComment, newRating, replyTarget?.id);
+      setNewComment('');
+      setReplyTarget(null);
+      setSubmissionMessage(result.message || 'Komentar berhasil dikirim.');
+      if (result.data?.status === 'approved') {
+        try {
+          setComments(await getComments(productId));
+        } catch (err) {
+          alert(`Komentar berhasil dikirim, tetapi daftar komentar gagal diperbarui: ${err.message}`);
+        }
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  const renderComment = (comment, depth = 0) => (
+    <article key={comment.id} className={`comment-item ${depth > 0 ? 'comment-reply' : ''} ${comment.isStaff ? 'staff-reply' : ''}`}>
+      <div className="comment-header">
+        <div className="user-info">
+          <span className="avatar">{initials(comment.userName)}</span>
+          <div>
+            <div className="comment-name-row">
+              <strong>{comment.userName}</strong>
+              {comment.isStaff && <span className="staff-badge">Admin</span>}
+              {comment.rating != null && <span className="comment-stars">{'★'.repeat(comment.rating)}</span>}
+            </div>
+            <span className="comment-date">{comment.createdAt}</span>
+          </div>
+        </div>
+      </div>
+      <p className="comment-content">{comment.comment}</p>
+      <div className="comment-actions">
+        <button
+          type="button"
+          className={`like-btn ${likedIds.includes(String(comment.id)) ? 'active' : ''}`}
+          onClick={() => handleLike(comment.id)}
+          title={isGuest ? 'Masuk untuk menyukai' : 'Suka'}
+        >
+          ⇧ {comment.likes || 0} Suka
+        </button>
+        <button type="button" className="reply-btn" onClick={() => handleReply(comment)}>
+          ← Balas
+        </button>
+      </div>
+      {comment.replies?.length > 0 && (
+        <div className="comment-replies">
+          {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+        </div>
+      )}
+    </article>
+  );
 
   if (!product) return <div className="product-detail-page"><p>Memuat detail produk atau produk tidak ditemukan.</p><button onClick={onBackToGrid}>Kembali ke Katalog</button></div>;
 
@@ -176,29 +239,36 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
                 <span className="avatar">{initials(currentUser.name)}</span>
                 <div>
                   <strong>Tulis Ulasan & Komentar Anda sebagai {currentUser.name}</strong>
-                  <p>Ulasan Anda akan dipublikasikan secara langsung untuk komunitas WartaTekno.</p>
+                  <p>{currentUser.role === 'admin' && replyTarget ? 'Balasan admin akan dipublikasikan langsung.' : 'Komentar akan ditinjau sebelum ditampilkan kepada publik.'}</p>
                 </div>
               </div>
               <span className="badge-verified">✓ {currentUser.role === 'admin' ? 'Admin' : 'Member Terverifikasi'}</span>
             </div>
 
-            <div className="rating-row">
-              <span className="rating-label">Rating Keseluruhan:</span>
-              <span className="star-picker">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className={s <= newRating ? 'star on' : 'star'}
-                    onClick={() => setNewRating(s)}
-                    aria-label={`${s} bintang`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </span>
-              <strong>{newRating}.0 / 5.0</strong>
-            </div>
+            {replyTarget ? (
+              <div className="reply-context">
+                Membalas {replyTarget.userName}
+                <button type="button" onClick={() => { setReplyTarget(null); setNewComment(''); }}>Batal</button>
+              </div>
+            ) : (
+              <div className="rating-row">
+                <span className="rating-label">Rating Keseluruhan:</span>
+                <span className="star-picker">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={s <= newRating ? 'star on' : 'star'}
+                      onClick={() => setNewRating(s)}
+                      aria-label={`${s} bintang`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </span>
+                <strong>{newRating}.0 / 5.0</strong>
+              </div>
+            )}
 
             <label className="review-text-label" htmlFor="review-textarea">Ulasan & Opini Pribadi</label>
             <textarea
@@ -210,73 +280,21 @@ export function ProductDetail({ productId = 'thinkpad-x1-gen11', products, onBac
               required
             />
             <div className="review-card-foot">
-              <span className="markdown-hint">Format teks Markdown didukung</span>
-              <button type="submit" className="submit-comment-btn">Publikasikan Ulasan</button>
+              <div>
+                <span className="markdown-hint">
+                  {currentUser.role === 'admin' && replyTarget
+                    ? 'Balasan admin tampil langsung.'
+                    : 'Komentar menunggu persetujuan admin.'}
+                </span>
+                {submissionMessage && <span role="status" className="submission-message">{submissionMessage}</span>}
+              </div>
+              <button type="submit" className="submit-comment-btn">{replyTarget ? 'Kirim Balasan' : 'Kirim untuk Ditinjau'}</button>
             </div>
           </form>
           )}
 
           <div className="comments-list">
-            {comments.map((comment) => {
-              const hasLiked = likedIds.includes(comment.id);
-
-              return (
-                <div key={comment.id} className="comment-item">
-                  <div className="comment-header">
-                    <div className="user-info">
-                      <span className="avatar">{initials(comment.userName)}</span>
-                      <div>
-                        <div className="comment-name-row">
-                          <strong>{comment.userName}</strong>
-                          <span className="comment-stars">{'★'.repeat(comment.rating || 5)}</span>
-                        </div>
-                        <span className="comment-date">{comment.createdAt}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="comment-content">{comment.comment}</p>
-
-                  <div className="comment-actions">
-                    <button
-                      type="button"
-                      className={`like-btn ${hasLiked ? 'active' : ''}`}
-                      onClick={() => handleLike(comment.id)}
-                      title={isGuest ? 'Masuk untuk menyukai' : 'Suka'}
-                    >
-                      ⇧ {comment.likes || 0} Suka
-                    </button>
-                    <button
-                      type="button"
-                      className="reply-btn"
-                      onClick={() => handleReply(comment.userName)}
-                    >
-                      ← Balas
-                    </button>
-                  </div>
-
-                  {comment.reply && (
-                    <div className="staff-reply">
-                      <div className="comment-header">
-                        <div className="user-info">
-                          <span className="avatar">{initials(comment.reply.author)}</span>
-                          <div>
-                            <div className="comment-name-row">
-                              <strong>{comment.reply.author}</strong>
-                              <span className="staff-badge">Admin</span>
-                            </div>
-                            <span className="comment-date">{comment.reply.timeAgo}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="comment-content">{comment.reply.text}</p>
-                      <div className="comment-actions">
-                        <span className="helpful">{comment.reply.helpful} Terbantu</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {comments.map((comment) => renderComment(comment))}
           </div>
         </section>
       </main>

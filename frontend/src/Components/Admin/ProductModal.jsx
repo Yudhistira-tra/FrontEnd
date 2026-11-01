@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './ProductModal.css';
 
 
@@ -28,7 +28,12 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
     specsSummary: 'Intel Core Ultra 9 185H, RTX 4070 8GB GDDR6, 32GB LPDDR5X, 1TB SSD NVMe, Layar 16-inch ROG Nebula OLED 2.5K 240Hz',
   }));
   const [preview, setPreview] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [error, setError] = useState('');
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,13 +44,21 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
+      e.target.value = '';
+      setImageFile(null);
+      setPreview('');
       setError('Ukuran file maksimal 5MB.');
       return;
     }
     setError('');
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    setError('Backend saat ini menerima URL gambar, belum menyediakan endpoint upload file. Tempel URL gambar pada kolom di bawah.');
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleImageUrlChange = (e) => {
+    setForm((prev) => ({ ...prev, image: e.target.value }));
+    setImageFile(null);
+    setPreview('');
   };
 
   const handleSubmit = (e) => {
@@ -65,6 +78,7 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
         title: form.title.trim(),
         brand: form.brand.trim(),
         category: form.category,
+        imageFile,
         sku: form.sku.trim() || `SKU-${Date.now()}`,
         price: priceNum,
         rating: 5.0,
@@ -139,7 +153,7 @@ export function ProductModal({ onClose, onSave, initialProduct, categories = [] 
             <input
               name="image"
               value={form.image.startsWith('blob:') ? '' : form.image}
-              onChange={handleChange}
+              onChange={handleImageUrlChange}
               placeholder="...atau tempel URL gambar di sini"
               className="url-input"
             />

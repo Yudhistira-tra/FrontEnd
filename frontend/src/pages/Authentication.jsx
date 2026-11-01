@@ -172,8 +172,8 @@ export function Authentication({ defaultMode = 'login', onBackToHome, onLogin })
       </form>
 
       <div className="demo-hint">
-        <strong>Akun pengujian backend:</strong> admin@wartatekno.id / password = Admin
-        <br />budi@wartatekno.id / password = Member
+        <strong>Akun pengujian backend:</strong> admin@wartatekno.id / password
+        <br />budi@wartatekno.id / password
       </div>
     </div>
   );

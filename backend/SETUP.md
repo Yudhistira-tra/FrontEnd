@@ -22,6 +22,7 @@ API aktif di http://127.0.0.1:8000/api/v1
 
 `migrate` membuat `database/database.sqlite` otomatis kalau file-nya belum ada.
 Perintah di atas sudah meng-*seed* produk, kategori, komentar, dan akun demo.
+Jalankan `php artisan storage:link` sekali agar gambar produk yang diunggah dapat diakses.
 
 ## Cara baru (repo ini sudah berisi proyek Laravel)
 
@@ -42,10 +43,8 @@ Segera ganti password admin sebelum dipakai di production.
 2. Isi bagian `DB_*` di `.env`: `DB_CONNECTION=pgsql`, host, port, nama, user, password.
 3. `php artisan migrate:fresh --seed`
 
-Nilai plusnya: pencarian lewat API (`?search=`) memakai `ilike` yang hanya ada di
-PostgreSQL. Di SQLite endpoint itu mengembalikan 500 (frontend tidak terpengaruh karena
-filter jalan di sisi klien). Kolom `specs_json` bertipe `jsonb` di migrasi tetap jalan di
-SQLite.
+Pencarian API menggunakan pencocokan case-insensitive yang mendukung SQLite maupun
+PostgreSQL. Kolom `specs_json` bertipe `jsonb` di migrasi tetap berjalan di SQLite.
 
 ## Kalau PHP sistem terlalu lama
 

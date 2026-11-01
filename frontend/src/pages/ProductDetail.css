@@ -447,6 +447,51 @@
   gap: 16px;
 }
 
+.comment-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0 0 20px;
+  padding-left: 14px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.comment-item.comment-reply {
+  padding: 14px;
+  box-shadow: none;
+}
+
+.comment-item.staff-reply {
+  border-color: #bfdbfe;
+  background-color: #f8fbff;
+}
+
+.reply-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.reply-context button {
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+}
+
+.submission-message {
+  color: #166534;
+  font-size: 12px;
+}
+
 .comment-item {
   border: 1px solid #eef2f7;
   border-radius: 12px;

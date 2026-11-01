@@ -21,8 +21,8 @@ class CommentModerationController extends Controller
             $query->where('product_id', $pid);
         }
         if ($s = trim((string) $request->query('search', ''))) {
-            $query->where(fn ($w) => $w->where('comment_text', 'ilike', "%{$s}%")
-                ->orWhere('user_name', 'ilike', "%{$s}%"));
+            $query->where(fn ($w) => $w->whereLike('comment_text', "%{$s}%")
+                ->orWhereLike('user_name', "%{$s}%"));
         }
 
         $items = $query->paginate(min((int) $request->query('per_page', 10), 100));
@@ -30,10 +30,11 @@ class CommentModerationController extends Controller
 
         $summary = ProductComment::selectRaw("
             count(*) as total,
-            count(*) filter (where status = 'pending') as pending,
-            count(*) filter (where status = 'flagged') as flagged,
-            count(*) filter (where status = 'approved') as approved
-        ")->first();
+            sum(case when status = 'pending' then 1 else 0 end) as pending,
+            sum(case when status = 'flagged' then 1 else 0 end) as flagged,
+            sum(case when status = 'approved' then 1 else 0 end) as approved,
+            sum(case when created_at >= ? then 1 else 0 end) as this_month
+        ", [now()->startOfMonth()])->first();
 
         return response()->json(['summary' => $summary, 'comments' => $items]);
     }
