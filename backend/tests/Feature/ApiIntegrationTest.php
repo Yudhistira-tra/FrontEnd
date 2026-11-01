@@ -27,10 +27,29 @@ class ApiIntegrationTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.title', 'Laptop ThinkPad X1 Carbon Gen 11 (2024)');
 
-        $this->getJson('/api/v1/products?search=Pixel')
+    }
+
+    public function test_seeded_products_have_images_and_reviews_with_one_unrated_demo_product(): void
+    {
+        $products = $this->getJson('/api/v1/products?per_page=50')
             ->assertOk()
-            ->assertJsonPath('data.0.rating_avg', null)
-            ->assertJsonPath('data.0.reviews_count', 0);
+            ->json('data');
+
+        $this->assertCount(8, $products);
+        $this->assertSame(
+            ['Tablet iPad Air M2 11 Inci'],
+            collect($products)->whereNull('rating_avg')->pluck('title')->values()->all()
+        );
+        $this->assertSame(
+            [],
+            collect($products)->where('reviews_count', 0)->pluck('title')->values()->all()
+        );
+
+        foreach ($products as $product) {
+            $this->assertStringStartsWith('/images/products/', $product['image_url']);
+            $assetPath = base_path('../frontend/public'.str_replace('/', DIRECTORY_SEPARATOR, $product['image_url']));
+            $this->assertFileExists($assetPath);
+        }
     }
 
     public function test_seeded_admin_can_login_with_the_displayed_credentials(): void
@@ -111,9 +130,9 @@ class ApiIntegrationTest extends TestCase
             ->assertOk()
             ->assertJsonPath('total_products', 8)
             ->assertJsonPath('products_this_month', 8)
-            ->assertJsonPath('total_comments', 4)
-            ->assertJsonPath('comments_this_month', 4)
-            ->assertJsonPath('approved_comment_percentage', 75);
+            ->assertJsonPath('total_comments', 11)
+            ->assertJsonPath('comments_this_month', 11)
+            ->assertJsonPath('approved_comment_percentage', 91);
     }
 
     public function test_admin_product_upload_accepts_multipart_images(): void

@@ -105,6 +105,10 @@ php artisan migrate:fresh --seed
 (spesifikasi, harga referensi, diskusi komentar), tulis ulasan + rating, like komentar,
 koleksi tersimpan (wishlist), form masukan/feedback, halaman Tentang Kami.
 
+Seeder menyediakan gambar dan ulasan fiktif untuk demo pada seluruh produk. iPad Air
+M2 sengaja memiliki ulasan tanpa rating untuk memperlihatkan kondisi produk yang belum
+memiliki rating; ulasan tersebut bukan testimoni pelanggan nyata.
+
 **Admin** — Kelola Produk (tambah, edit, aktifkan produk draf, hapus, buka detail),
 Moderasi Komentar (setujui, tandai spam, hapus), Feedback Pengguna (ubah status,
 tandai selesai, hapus).

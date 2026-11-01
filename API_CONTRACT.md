@@ -90,6 +90,8 @@ backend assigns `member` by default; admins are promoted/seeded server-side.
 
 **GET /products** (public) → `200` Laravel paginator, with products in `data`.
 Products with no approved ratings have `rating_avg: null` and `reviews_count: 0`.
+Seeded demo data includes local product images and clearly labeled fictional
+reviews; the iPad Air M2 demo review intentionally has no rating.
 **GET /admin/products** (admin) returns all product statuses and uses the same
 paginated shape. Search uses portable case-insensitive matching in SQLite and PostgreSQL.
 **POST /products** (admin) — body: all fields below except `id`, `rating`,

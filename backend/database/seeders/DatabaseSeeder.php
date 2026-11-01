@@ -34,32 +34,32 @@ class DatabaseSeeder extends Seeder
                 ['Prosesor' => 'Intel Core i7-1365U (10 Core, 12 Threads, up to 5.20 GHz)', 'RAM' => '32 GB LPDDR5 6400MHz (Soldered)',
                  'Penyimpanan' => '1 TB SSD M.2 PCIe Gen 4 NVMe Opal 2.0', 'Layar' => '14" WUXGA (1920x1200) IPS, 16:10, Anti-Glare, 400 nits',
                  'Bobot' => '1.12 kg (Serat Carbon Fiber & Magnesium)', 'Baterai & Daya' => '57Wh Li-Polymer, Rapid Charge 65W USB-C'],
-                'Rekomendasi Editor: laptop bisnis tertipis dengan keyboard terbaik di kelasnya.', 9.0],
+                'Rekomendasi Editor: laptop bisnis tertipis dengan keyboard terbaik di kelasnya.', 9.0, 'thinkpad-x1-carbon-gen-11.jpg'],
             ['Smartphone', 'Smartphone Pixel 8 Pro', 'Google', 'GGL-PX8P', 16200000, '2023-10-12', false,
-                ['Chipset' => 'Google Tensor G3', 'RAM' => '12 GB', 'Layar' => '6.7" LTPO OLED 120Hz', 'Baterai' => '5050 mAh'], null, null],
+                ['Chipset' => 'Google Tensor G3', 'RAM' => '12 GB', 'Layar' => '6.7" LTPO OLED 120Hz', 'Baterai' => '5050 mAh'], null, null, 'pixel-8-pro.jpg'],
             ['Audio', 'Headphone Sony WH-1000XM5', 'Sony', 'SNY-WH1000XM5', 5199000, '2022-05-20', false,
-                ['Tipe' => 'Over-ear wireless', 'ANC' => 'Ya, 8 mikrofon', 'Baterai' => 'Hingga 30 jam', 'Konektivitas' => 'Bluetooth 5.2'], null, null],
+                ['Tipe' => 'Over-ear wireless', 'ANC' => 'Ya, 8 mikrofon', 'Baterai' => 'Hingga 30 jam', 'Konektivitas' => 'Bluetooth 5.2'], null, null, 'sony-wh-1000xm5.jpg'],
             ['Smartwatch', 'Smartwatch Garmin Forerunner 265', 'Garmin', 'GRM-FR265', 7799000, '2023-03-16', false,
-                ['Layar' => '1.3" AMOLED', 'GPS' => 'Multi-band', 'Baterai' => 'Hingga 13 hari', 'Tahan Air' => '5 ATM'], null, null],
+                ['Layar' => '1.3" AMOLED', 'GPS' => 'Multi-band', 'Baterai' => 'Hingga 13 hari', 'Tahan Air' => '5 ATM'], null, null, 'garmin-forerunner-265.jpg'],
             ['Tablet', 'Tablet iPad Air M2 11 Inci', 'Apple', 'APL-IPADAIR-M2', 11499000, '2024-05-15', false,
-                ['Chipset' => 'Apple M2', 'Layar' => '11" Liquid Retina', 'Penyimpanan' => '128 GB', 'Konektivitas' => 'Wi-Fi 6E'], null, null],
+                ['Chipset' => 'Apple M2', 'Layar' => '11" Liquid Retina', 'Penyimpanan' => '128 GB', 'Konektivitas' => 'Wi-Fi 6E'], null, null, 'ipad-air-m2-11-inch.jpg'],
             ['Aksesoris', 'Keyboard Keychron Q1 Pro Wireless', 'Keychron', 'KCR-Q1PRO', 3250000, '2023-06-01', false,
-                ['Layout' => '75% QMK/VIA', 'Switch' => 'Hot-swappable', 'Koneksi' => 'Bluetooth 5.1 / USB-C', 'Casing' => 'Aluminium CNC'], null, null],
+                ['Layout' => '75% QMK/VIA', 'Switch' => 'Hot-swappable', 'Koneksi' => 'Bluetooth 5.1 / USB-C', 'Casing' => 'Aluminium CNC'], null, null, 'keychron-q1-pro-wireless.jpg'],
             ['Smartphone', 'Smartphone Samsung Galaxy S24 Ultra', 'Samsung', 'SMG-S24U', 21999000, '2024-01-31', false,
-                ['Chipset' => 'Snapdragon 8 Gen 3 for Galaxy', 'RAM' => '12 GB', 'Penyimpanan' => '256 GB', 'Kamera' => '200 MP utama'], null, null],
+                ['Chipset' => 'Snapdragon 8 Gen 3 for Galaxy', 'RAM' => '12 GB', 'Penyimpanan' => '256 GB', 'Kamera' => '200 MP utama'], null, null, 'samsung-galaxy-s24-ultra.jpg'],
             ['Laptop', 'Laptop MacBook Air M3 15 Inci', 'Apple', 'APL-MBA15-M3', 22499000, '2024-03-08', false,
-                ['Chipset' => 'Apple M3', 'RAM' => '16 GB', 'Penyimpanan' => '512 GB SSD', 'Layar' => '15.3" Liquid Retina'], null, null],
+                ['Chipset' => 'Apple M3', 'RAM' => '16 GB', 'Penyimpanan' => '512 GB SSD', 'Layar' => '15.3" Liquid Retina'], null, null, 'macbook-air-m3-15-inch.jpg'],
         ];
 
         $products = [];
-        foreach ($rows as [$cat, $title, $brand, $sku, $price, $release, $featured, $specs, $note, $score]) {
+        foreach ($rows as [$cat, $title, $brand, $sku, $price, $release, $featured, $specs, $note, $score, $image]) {
             $products[$title] = Product::updateOrCreate(['slug' => Str::slug($title)], [
                 'category_id' => $cats[$cat]->id,
                 'title' => $title,
                 'brand' => $brand,
                 'sku' => $sku,
                 'description' => "Ulasan lengkap {$title} oleh redaksi WartaTekno.",
-                'image_url' => 'https://placehold.co/800x600?text='.urlencode($title),
+                'image_url' => '/images/products/'.$image,
                 'price' => $price,
                 'release_date' => $release,
                 'specs_json' => $specs,
@@ -90,6 +90,30 @@ class DatabaseSeeder extends Seeder
             ProductComment::create([
                 'product_id' => $products['Laptop MacBook Air M3 15 Inci']->id, 'user_name' => 'Akunbaster99', 'user_email' => 'spam@example.com',
                 'comment_text' => 'Dapatkan diskon gila di https://spam.example/promo sekarang!', 'status' => 'flagged',
+            ]);
+        }
+
+        // These are fictional seed reviews for the demo, not customer testimonials.
+        $demoReviews = [
+            ['Smartphone Pixel 8 Pro', 'Pixel 8 Pro', 'Demo Pengguna Pixel', 'Pixel menonjol di bagian kamera dan hasil fotonya konsisten untuk pemakaian harian. Layar OLED-nya juga nyaman dilihat.', 5],
+            ['Headphone Sony WH-1000XM5', 'Sony WH-1000XM5', 'Demo Pengguna Audio', 'Peredam bisingnya membantu saat bekerja di tempat ramai. Bantalan terasa nyaman dan suara vokal terdengar jernih.', 5],
+            ['Smartwatch Garmin Forerunner 265', 'Garmin Forerunner 265', 'Demo Pengguna Garmin', 'Layar AMOLED mudah dibaca saat berolahraga, GPS terasa andal untuk mencatat rute, dan metrik latihan cukup lengkap.', 4],
+            ['Tablet iPad Air M2 11 Inci', 'iPad Air M2', 'Demo Pengguna Tablet', 'Tablet terasa ringan untuk dibawa dan performanya responsif untuk membaca, mencatat, serta hiburan. Ini komentar demo tanpa rating.', null],
+            ['Keyboard Keychron Q1 Pro Wireless', 'Keychron Q1 Pro', 'Demo Pengguna Keyboard', 'Suara dan rasa mengetiknya memuaskan, layout 75 persen tetap menyediakan tombol penting, dan koneksi nirkabel praktis.', 5],
+            ['Smartphone Samsung Galaxy S24 Ultra', 'Galaxy S24 Ultra', 'Demo Pengguna Samsung', 'Layar besar dan S Pen berguna untuk mencatat. Kamera fleksibel, tetapi ukuran ponsel terasa besar untuk penggunaan satu tangan.', 4],
+            ['Laptop MacBook Air M3 15 Inci', 'MacBook Air M3 15 inci', 'Demo Pengguna MacBook', 'Layar 15 inci nyaman untuk multitasking, bodinya ringan, dan performanya lancar untuk pekerjaan harian serta produktivitas.', 5],
+        ];
+
+        foreach ($demoReviews as [$title, $productLabel, $name, $comment, $rating]) {
+            $product = $products[$title];
+            ProductComment::firstOrCreate([
+                'product_id' => $product->id,
+                'user_email' => 'demo-review-'.Str::slug($productLabel).'@example.com',
+            ], [
+                'user_name' => $name,
+                'comment_text' => 'Ulasan demo — '.$comment,
+                'rating' => $rating,
+                'status' => 'approved',
             ]);
         }
 
